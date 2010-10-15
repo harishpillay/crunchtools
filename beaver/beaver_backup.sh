@@ -3,7 +3,7 @@
 # Writen By: Scott McCarty
 # Date: 2/19/2007
 # Email: scott.mccarty@gmail.com
-# Version: .5
+# Version: .9
 # Description: Simple Bash/Rsync backup utility needed to backup all servers
 # accessable from the network. You can rely on DNS for name resolution or 
 # use ip addresses instead. 
@@ -296,6 +296,5 @@ report () {
 
 # main
 init $*
-exit
 rsync_backup
 report
