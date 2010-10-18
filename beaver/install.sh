@@ -25,9 +25,9 @@ fi
 
 # Install process
 cp -v beaver_backup.sh /usr/local/bin/
-cp -v beaver_backup.conf /usr/local/bin/
-cp -v beaver_backup.excludes /usr/local/bin/
-cp -v beaver_backup.list /usr/local/bin/
+cp -v beaver_backup.conf /usr/local/etc/
+cp -v beaver_backup.excludes /usr/local/etc/
+cp -v beaver_backup.list /usr/local/etc/
 
 if [ -e /usr/local/bin/beaver_backup.sh ] && \
    [ -e /usr/local/bin/beaver_backup.conf ] && \
