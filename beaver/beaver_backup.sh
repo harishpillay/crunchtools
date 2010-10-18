@@ -38,9 +38,9 @@ usage() {
 	echo ""
 	echo "USAGE:"
 	echo "    $0 [options]"
-	echo "where options is any of:"
-	echo "    f <file> - get Rsync clients from <file>"
-	echo "    F <file> - get Databse clients from <file>"
+	echo "Where options is any of:"
+	echo "    f <file> - Get Rsync clients from <file>"
+	echo "    s <directory> - Only backup certain directory"
 	echo "    v - Verbose"
 	echo "    h - Help"
 	echo ""
@@ -64,13 +64,17 @@ init() {
 
 
 	# Set Defaults
-	rsync_clients_file=`get_config beaver_backup.list`
+	remote_clients_file=`get_config beaver_backup.list`
+	source_directory="/"
 	debug=0
+    test_mode=0
 
-	# main
-	while getopts "f:vh" options; do
+	# Get options
+	while getopts "f:s:tvh" options; do
 		case $options in
-		f ) rsync_clients_file="$OPTARG";;
+		f ) remote_clients_file="$OPTARG";;
+		s ) source_directory="$OPTARG";;
+        t ) test_mode=1;;
 		v ) debug=1;;
 		h ) usage;;
 		\? ) usage;;
@@ -89,64 +93,108 @@ init() {
         keychain_support="false"
     fi
 
+    ## Commands
+    awk=`which awk`
+    grep=`which grep`
+    tail=`which tail`
+    ps=`which ps`
+    sort=`which sort`
+    wc=`which wc`
+
     ## Option: Use scriptlog if available
     if which scriptlog &>/dev/null
     then
         scriptlog=`which scriptlog`
-        scriptlog_i="$scriptlog -i 24"
-        scriptlog_s="$scriptlog -s "
+        rsync="$scriptlog -i 24 `which rsync`"
+        echo="$scriptlog -s "
     else
         # Define simple takeover function
-        scriptlog=""
-        scriptlog_i="eval"
-        scriptlog_s="echo"
+    	rsync=`which rsync`
+        echo="echo"
     fi
 
-	# Log start time
-	$scriptlog_s "Starting Backup"
+	## Log start time
+	$echo "Starting Backup"
 	start_time=`date`
-
-	# Variables
-	job_id=`/bin/date | /usr/bin/md5sum | /bin/cut -f1  -d" "`
-	rsync_clients=`cat $rsync_clients_file|grep -v ^#`
-	rsync_fail_list=""
-	rsync_success_list=""
-	rsync_client_number=0
-
-    ## Exclude list logic
-    exclude_list_file=`get_config beaver_backup.excludes`
-    exclude_list=`for i in \`cat $exclude_list_file\`; do echo -n " --exclude=$i"; done`
 
     # Tunables
     config_file=`get_config beaver_backup.conf`
     source $config_file
 
+	## Variables
+	job_id=`/bin/date | /usr/bin/md5sum | /bin/cut -f1  -d" "`
+	remote_clients=`cat $remote_clients_file|grep -v ^#`
+    rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
+	rsync_fail_list=""
+	rsync_success_list=""
+	remote_client_number=0
+    script_name=`basename $0`
+    short_wait=3
+    long_wait=300
+
+    ## Exclude list logic
+    exclude_list_file=`get_config beaver_backup.excludes`
+    exclude_list=`for i in \`cat $exclude_list_file\`; do echo -n " --exclude=\"$i\""; done`
+
+    display_debug
+
+	# Setup logging
+	exec 3>/tmp/${script_name}.tmp
+}
+
+display_debug() {
+
 	# Debug Output	
-	debug "Beaver Backup List: $rsync_clients_file";
+	debug "Beaver Backup List: $remote_clients_file";
     debug "Beaver Backup Config: $config_file"
     debug "Email: $email_address"
     debug "Keychain Support: $keychain_support"
 	debug "Job ID: $job_id"
 	debug "Slots: $max_slots"
+	debug "Source Directory: $source_directory"
+	debug "Destination Directory: $destination_directory"
+}
 
+used_slots() {
+    ls /tmp/$script_name.*.running 2>/dev/null | wc -l || echo 0
+}
 
-	# Setup logging
-	exec 3>/tmp/$0.tmp
+test_mode() {
+
+    # Override variables
+    source_directory="/etc"
+    remote_clients="server1.example.com server2.example.com server3.example.com"
+    destination_directory="/tmp"
+    debug=1
+    short_wait=5
+    long_wait=5
+
+    display_debug
+
+    # Add hosts entries
+    echo "127.0.0.1 ${remote_clients}" >> /etc/hosts
+
+    # Run main
+    main
+    report
+
+    # Remove hosts entries
+    sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
+
+    # Show output email
+    echo "Email Output"
+    cat /tmp/$script_name.tmp
+
+    # removed backup files
+    for remote_client in $remote_clients
+    do
+        rm -rf $destination_directory/$remote_client
+    done
 }
 
 find_open_slot() {
 
-	# This monstrousity finds the correct number of running rsyncs
-	used_slots=`/bin/ps -ef | /bin/grep $job_id | /bin/grep -v grep | awk '{ print $9" "$NF}' | grep $job_id | sort -u | /usr/bin/wc -l `
-
-	# Debug Output
-	debug "Slots are filled with: "
-	if [ $debug -eq 1 ]
-	then
-		/bin/ps -ef | /bin/grep $job_id | /bin/grep -v grep | awk '{ print $9" "$NF}' | grep $job_id | sort -u
-	fi
-
-	if  [ "$used_slots" -lt "$max_slots" ]
+	if  [ `used_slots` -lt "$max_slots" ]
 	then
 		debug "Found open slot"
 		return 0
@@ -161,21 +209,31 @@ async_backup() {
 # Keep track of start/stop times
 ###############################################################################
 
-	debug  "Backing up client: $rsync_client"
-	$scriptlog_s "Begin rsync client: $rsync_client"
+	$echo "Backing up client: $remote_client"
+
+    touch /tmp/${script_name}.$remote_client.running
 
 	# Check to see if destination directory exists
-	if [ ! -e $backup_destination/$rsync_client ]
+	if [ ! -e $destination_directory/$remote_client ]
 	then
-		mkdir -p $backup_destination/$rsync_client
+		mkdir -p $destination_directory/$remote_client
 	fi
 
     # Perform Backup
-	debug "Running: /usr/bin/rsync --exclude=$job_id $rsync_options $exclude_list root@$rsync_client:/ /srv/backup/$rsync_client/"
-	$scriptlog_i"/usr/bin/rsync --exclude=$job_id $rsync_options $exclude_list root@$rsync_client:/ /srv/backup/$rsync_client/"
+    export RSYNC_RSH="ssh -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
+    command="$rsync $rsync_options --exclude=$job_id $exclude_list \
+        root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
+
+	debug "Running: $command"
+    if $command
+    then
+        mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.success
+    else
+        mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
+    fi
 
 	# Log time finished
-	$scriptlog_s "Finished rsync client: $rsync_client"
+	$echo "Finished rsync client: $remote_client"
 }
 
 run_job() {
@@ -188,9 +246,9 @@ run_job() {
 		then
 			# If there is an open slot, fire off another job
 			async_backup &
-			sleep 3
+			sleep $short_wait
 		else
-			sleep 300
+			sleep $long_wait
 			run_job
 		fi
 }
@@ -200,31 +258,28 @@ wait_jobs() {
 # Use a little magical recurstion to wait for all jobs to finish
 ###############################################################################
 
-	# This monstrousity finds the correct number of running rsyncs
-	used_slots=`/bin/ps -ef | /bin/grep $job_id | /bin/grep -v grep | awk '{ print $9" "$NF}' | grep $job_id | sort -u | /usr/bin/wc -l `
-
-	if  [ "$used_slots" -eq "0" ]
+	if  [ `used_slots` -eq "0" ]
 	then
 		debug "All jobs have completed"
 		return 0
 	else
 		debug "Waiting for running jobs"
-		sleep 300
+		sleep $long_wait
 		wait_jobs
 	fi
 }
 
-rsync_backup () {
+main() {
 
 	# Main loop
-	for rsync_client in $rsync_clients
+	for remote_client in $remote_clients
 	do
 
 		run_job
 
 		# Check/Calculat results of rsync
-		#let "rsync_client_result = $rsync_client_result + $RETVAL"
-		let "rsync_client_number = $rsync_client_number + 1" 
+		#let "remote_client_result = $remote_client_result + $RETVAL"
+		let "remote_client_number = $remote_client_number + 1" 
 	done
 
 	# After all jobs have begaon, wait for final job to finish
@@ -238,26 +293,23 @@ rsync_backup () {
 report () {
 
 	# Build lists
-	for rsync_client in $rsync_clients
+	for remote_client in $remote_clients
 	do
-		if [ `(/bin/zcat /var/log/script.log.1.gz;/bin/cat /var/log/script.log) | \
-            /bin/grep $0 | \
-            /bin/grep rsync | \
-            /bin/grep " root@${rsync_client}:/ " | \
-            /usr/bin/tail -n1 | \
-            /bin/awk '{print $7}'` = "SUCCESS" ]
+        sleep $short_wait
+		if [ -e /tmp/${script_name}.${remote_client}.success ]
 		then
-			debug "Adding $rsync_client to success list"
-			rsync_success_list="$rsync_success_list $rsync_client"
+			debug "Adding $remote_client to success list"
+			rsync_success_list="$rsync_success_list $remote_client"
+            rm -f /tmp/${script_name}.$remote_client.success
 		else
-			debug "Adding $rsync_client to fail list"
-			rsync_fail_list="$rsync_fail_list $rsync_client"
+			debug "Adding $remote_client to fail list"
+			rsync_fail_list="$rsync_fail_list $remote_client"
+            rm -f /tmp/${script_name}.$remote_client.failed
 		fi
 	done
 
-
 	# Reporting
-	echo "Rsync backup from $HOSTNAME: Completed, $rsync_client_number client(s)" >&3
+	echo "Rsync backup from $HOSTNAME: Completed, $remote_client_number client(s)" >&3
 	echo "" >&3
 	echo "Start time: $start_time" >&3
 	echo "End time:   $end_time" >&3
@@ -289,12 +341,22 @@ report () {
 	fi
 
 	# Send report
-	cat /tmp/$0.tmp|mail -s "Beaver Backup Complete" $email_address
+	cat /tmp/${script_name}.tmp|mail -s "Beaver Backup Complete" $email_address
 
-} # end report
+    # Safety Net Cleanup
+    rm -f /tmp/${script_name}.*.success
+    rm -f /tmp/${script_name}.*.failed
+    rm -f /tmp/${script_name}.*.running
+
+}
 
 
 # main
 init $*
-rsync_backup
-report
+if [ $test_mode -eq 1 ]
+then
+    test_mode
+else
+    main
+    report
+fi
