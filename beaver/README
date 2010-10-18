@@ -1,2 +1,2 @@
-To install, just run. Everything will be put in /usr/local
+To install, just run. Everything will be put in /usr/local/etc/ and /usr/local/bin
     ../install.sh
