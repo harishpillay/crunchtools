@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # Writen By: Scott McCarty
-# Date: 2/19/2007
+# Date: 10/2010
 # Email: scott.mccarty@gmail.com
 # Version: .9
 # Description: Simple Bash/Rsync backup utility needed to backup all servers
 # accessable from the network. You can rely on DNS for name resolution or 
 # use ip addresses instead. 
 #
-# Copyright (C) 2009 Scott McCarty
+# Copyright (C) 2010 Scott McCarty
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
