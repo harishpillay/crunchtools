@@ -17,12 +17,12 @@
 					<item_001>
 						<snmp_field_name>bgpTX</snmp_field_name>
 						<data_template_id>hash_0100198abce0e12028575f8c9264f0663ae209</data_template_id>
-						<data_template_rrd_id>hash_080019997fa07be5c001bae70dc3b48fcb5555</data_template_rrd_id>
+						<data_template_rrd_id>hash_080019b1b11971ad929ebf067e0bd9002c8af6</data_template_rrd_id>
 					</item_001>
 					<item_002>
 						<snmp_field_name>bgpRX</snmp_field_name>
 						<data_template_id>hash_0100198abce0e12028575f8c9264f0663ae209</data_template_id>
-						<data_template_rrd_id>hash_080019b893a42fe4758dee6340b7e2cf8f573d</data_template_rrd_id>
+						<data_template_rrd_id>hash_080019c5eedf8ac4736da3090630d3e215a04f</data_template_rrd_id>
 					</item_002>
 				</rrd>
 				<sv_graph>
@@ -382,24 +382,24 @@
 				<column_name>task_item_id</column_name>
 				<items>hash_0000193b2c148afe4c633a64a059f99698dd1c|hash_000019b8eaaf89ae7a34d68c46323f73032987|hash_000019899a5c96653f030e6951cb39e3029611|hash_0000197692089b585a4f1ebdfc7f74321ca18b</items>
 			</hash_090019ed2ccc2560367f225eaa45455bafa7a3>
-			<hash_0900197c5f7f35c35052f3b05b1beffc2bd216>
+			<hash_090019e3dbd2459f1a2c03090aa46b35bd1dd8>
 				<name>Data Source [prefixes]</name>
 				<description></description>
 				<column_name>task_item_id</column_name>
 				<items></items>
-			</hash_0900197c5f7f35c35052f3b05b1beffc2bd216>
-			<hash_0900195d727cbd2664347c52024ac4f6e5000b>
+			</hash_090019e3dbd2459f1a2c03090aa46b35bd1dd8>
+			<hash_09001997bee62d959708b86a39d403ac1fd647>
 				<name>Data Source [received]</name>
 				<description></description>
 				<column_name>task_item_id</column_name>
 				<items></items>
-			</hash_0900195d727cbd2664347c52024ac4f6e5000b>
-			<hash_09001973031720eaf2629e678d2ce3df582e44>
+			</hash_09001997bee62d959708b86a39d403ac1fd647>
+			<hash_09001996c0306a40bebe6591582c6913052d97>
 				<name>Data Source [sent]</name>
 				<description></description>
 				<column_name>task_item_id</column_name>
 				<items></items>
-			</hash_09001973031720eaf2629e678d2ce3df582e44>
+			</hash_09001996c0306a40bebe6591582c6913052d97>
 		</inputs>
 	</hash_0000198862977fce604e7ac723c5a990d38e35>
 	<hash_0100198abce0e12028575f8c9264f0663ae209>
@@ -416,22 +416,22 @@
 			<rra_items>hash_150019c21df5178e5c955013591239eb0afd46|hash_1500190d9c0af8b8acdc7807943937b3208e29|hash_1500196fc2d038fb42950138b0ce3e9874cc60|hash_150019e36f3adb9f152adfa5dc50fd2b23337e|hash_150019283ea2bf1634d92ce081ec82a634f513</rra_items>
 		</ds>
 		<items>
-			<hash_0800192b4c2f4ad38de5e23896594c0c9388b5>
+			<hash_080019c5eedf8ac4736da3090630d3e215a04f>
 				<data_source_name>received</data_source_name>
 				<rrd_minimum>0</rrd_minimum>
 				<rrd_maximum>2000000</rrd_maximum>
 				<data_source_type_id>2</data_source_type_id>
 				<rrd_heartbeat>600</rrd_heartbeat>
 				<data_input_field_id>hash_07001982c6543ca7d79bc204bd35772f4cedf1</data_input_field_id>
-			</hash_0800192b4c2f4ad38de5e23896594c0c9388b5>
-			<hash_080019e3d3b4d91f461db3042b8b5301ca6ff2>
+			</hash_080019c5eedf8ac4736da3090630d3e215a04f>
+			<hash_080019b1b11971ad929ebf067e0bd9002c8af6>
 				<data_source_name>sent</data_source_name>
 				<rrd_minimum>0</rrd_minimum>
 				<rrd_maximum>1000000</rrd_maximum>
 				<data_source_type_id>2</data_source_type_id>
 				<rrd_heartbeat>600</rrd_heartbeat>
 				<data_input_field_id>hash_07001918ce0c5b35ed50a468c116c4b3e627d5</data_input_field_id>
-			</hash_080019e3d3b4d91f461db3042b8b5301ca6ff2>
+			</hash_080019b1b11971ad929ebf067e0bd9002c8af6>
 			<hash_08001931e5a69006909d5cd4995b73f51114bb>
 				<t_data_source_name></t_data_source_name>
 				<data_source_name>prefixes</data_source_name>
@@ -446,22 +446,6 @@
 				<t_data_input_field_id></t_data_input_field_id>
 				<data_input_field_id>0</data_input_field_id>
 			</hash_08001931e5a69006909d5cd4995b73f51114bb>
-			<hash_080019bac1c68a4fcfb195693cae4136dd1984>
-				<data_source_name>received</data_source_name>
-				<rrd_minimum>0</rrd_minimum>
-				<rrd_maximum>2000000</rrd_maximum>
-				<data_source_type_id>2</data_source_type_id>
-				<rrd_heartbeat>600</rrd_heartbeat>
-				<data_input_field_id>0</data_input_field_id>
-			</hash_080019bac1c68a4fcfb195693cae4136dd1984>
-			<hash_08001969dcb70dc62417ccc99fc5f2d6c98ae8>
-				<data_source_name>sent</data_source_name>
-				<rrd_minimum>0</rrd_minimum>
-				<rrd_maximum>1000000</rrd_maximum>
-				<data_source_type_id>2</data_source_type_id>
-				<rrd_heartbeat>600</rrd_heartbeat>
-				<data_input_field_id>0</data_input_field_id>
-			</hash_08001969dcb70dc62417ccc99fc5f2d6c98ae8>
 		</items>
 		<data>
 			<item_000>
