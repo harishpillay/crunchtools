@@ -1,0 +1,45 @@
+<interface>
+	<name>eBGP/iBGP Monitor</name>
+	<description>Queries a host for a list of BGP neighbors</description>
+	<oid_index>.1.3.6.1.2.1.15.3.1.5</oid_index>
+	<oid_index_parse>OID/REGEXP:.*\.([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*)$</oid_index_parse>
+
+	<fields>
+		<bgpIndex>
+			<name>bgpIndex</name>
+			<method>walk</method>
+			<source>value</source>
+			<direction>input</direction>
+			<oid>.1.3.6.1.2.1.15.3.1.5</oid>
+		</bgpIndex>
+		<bgpPrefixes>
+			<name>prefixes</name>
+			<method>walk</method>
+			<source>value</source>
+			<direction>output</direction>
+			<oid>1.3.6.1.4.1.9.9.187.1.2.4.1.1</oid>
+			<oid_suffix>1.1</oid_suffix> 
+		</bgpPrefixes>
+		<bgpRX>
+			<name>received</name>
+			<method>walk</method>
+			<source>value</source>
+			<direction>output</direction>
+			<oid>.1.3.6.1.2.1.15.3.1.12</oid>
+		</bgpRX>
+		<bgpTX>
+			<name>sent</name>
+			<method>walk</method>
+			<source>value</source>
+			<direction>output</direction>
+			<oid>.1.3.6.1.2.1.15.3.1.13</oid>
+		</bgpTX>
+		<bgpTXX>
+			<name>txx</name>
+			<method>walk</method>
+			<source>value</source>
+			<direction>output</direction>
+			<oid>.1.3.6.1.2.1.15.3.1.13</oid>
+		</bgpTXX>
+	</fields>
+</interface>

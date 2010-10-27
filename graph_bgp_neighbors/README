@@ -1,0 +1,46 @@
+################################################################################
+#
+# Writen By: Scott McCarty
+# Date: 3/2010
+# Email: scott.mccarty@gmail.com
+#
+# Copyright (C) 2010 Scott McCarty
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+#################################################################################
+
+Background
+#################################################################################
+In order to monitor BGP on a cisco router, you must first know what the normal
+number of prefixes in memory is and also the number of messages sent/received.
+Number of prefixes in memory is divided by 1000 to allow better vieweing of 
+Prefixes overlaid with Messages RX/TX.
+
+This data query has been tested on cacti 0.8.7e and Cisco 2851 routers.
+
+For more info and other open source tools visit: opensource.eyemg.com
+
+
+Installation
+#################################################################################
+Minimum version is cacti 0.8.7e because is requires <oid_suffix> directive in
+snmp queries. Installation requires the following two files:
+
+	cacti_ebgp_ibgp.xml
+		Import this file using the cacti web interface
+
+	ebgp_ibgp.xml 
+		Copy this file to the $cacti_home/resource/snmp_queries/ directory
