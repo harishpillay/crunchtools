@@ -1,5 +1,35 @@
+Background
+===============================================================================
 
-snmpd.conf line
-sh .1.3.6.1.4.1.2021.54 sockets_pipes_files /usr/local/bin/sockets_pipes_files_client.sh
+Since everything in Linux/Unix is a file, Linux has some interesting ways to 
+monitor for problems. Often systems administrators monitor CPU, Ram, Disk 
+Space, and Network Usage. These are all valid data points and are especially 
+useful for capacity planning. For real time detection of problems, especially 
+with web/application/databases, these are not always the best indicators. In my 
+experience, checking and trending the number of open sockets, pipes, files, 
+tcp/udp sockets, and unix sockets has been the single best indicator of a 
+problem. These have been much better than CPU, Load, or I/O Wait. In fact, 
+under optimal usage of server hardware, one would expect spikes in CPU, RAM, 
+and I/O.
 
+For further info see:
+    http://crunchtools.com
 
+Installation
+===============================================================================
+
+There is both a server component and a node component
+
+Cacti Server
+Import XML template on the cacti server
+sockets_pipes_files_template.xml
+
+Copy the poller script out to the cacti server
+/usr/web/cacti/scripts/sockets_pipes_files_poller.sh
+
+Remote Node
+Copy the client script to the client
+    /usr/local/bin/sockets_pipes_files_client.sh
+
+Configure snmp on the client to have the following line
+    sh .1.3.6.1.4.1.2021.54 sockets_pipes_files /usr/local/bin/sockets_pipes_files_client.sh
