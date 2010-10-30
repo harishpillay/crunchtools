@@ -119,6 +119,7 @@ init() {
 	start_time=`date`
 
     # Tunables
+    ssh_options=""
     config_file=`get_config beaver_backup.conf`
     source $config_file
 
@@ -170,6 +171,7 @@ test_mode() {
     short_wait=5
     long_wait=5
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
+    ssh_options="-o StrictHostKeyChecking=no"
 
     # Test Dependancies
     if [ ! -e "$rsync" ]; then echo "Rsync not installed"; exit 1; fi
@@ -230,7 +232,7 @@ async_backup() {
 	fi
 
     # Perform Backup
-    export RSYNC_RSH="ssh -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
+    export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
     command="$rsync $rsync_options --exclude=$job_id $exclude_list \
         root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
 
