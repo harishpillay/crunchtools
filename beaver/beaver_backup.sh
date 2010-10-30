@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # Writen By: Scott McCarty
-# Date: 10/2010
+# Date: 2/19/2007
 # Email: scott.mccarty@gmail.com
 # Version: .9
 # Description: Simple Bash/Rsync backup utility needed to backup all servers
 # accessable from the network. You can rely on DNS for name resolution or 
 # use ip addresses instead. 
 #
-# Copyright (C) 2010 Scott McCarty
+# Copyright (C) 2009 Scott McCarty
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -100,6 +100,7 @@ init() {
     ps=`which ps`
     sort=`which sort`
     wc=`which wc`
+    sshd=`which sshd`
 
     ## Option: Use scriptlog if available
     if which scriptlog &>/dev/null
@@ -121,13 +122,13 @@ init() {
     config_file=`get_config beaver_backup.conf`
     source $config_file
 
-	## Variables
-	job_id=`/bin/date | /usr/bin/md5sum | /bin/cut -f1  -d" "`
-	remote_clients=`cat $remote_clients_file|grep -v ^#`
+    ## Variables
+    job_id=`/bin/date | /usr/bin/md5sum | /bin/cut -f1  -d" "`
+    remote_clients=`cat $remote_clients_file|grep -v ^#`
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
-	rsync_fail_list=""
-	rsync_success_list=""
-	remote_client_number=0
+    rsync_fail_list=""
+    rsync_success_list=""
+    remote_client_number=0
     script_name=`basename $0`
     short_wait=3
     long_wait=300
@@ -146,9 +147,9 @@ display_debug() {
 
 	# Debug Output	
 	debug "Beaver Backup List: $remote_clients_file";
-    debug "Beaver Backup Config: $config_file"
-    debug "Email: $email_address"
-    debug "Keychain Support: $keychain_support"
+	debug "Beaver Backup Config: $config_file"
+	debug "Email: $email_address"
+	debug "Keychain Support: $keychain_support"
 	debug "Job ID: $job_id"
 	debug "Slots: $max_slots"
 	debug "Source Directory: $source_directory"
@@ -168,6 +169,14 @@ test_mode() {
     debug=1
     short_wait=5
     long_wait=5
+    rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
+
+    # Test Dependancies
+    if [ ! -e "$rsync" ]; then echo "Rsync not installed"; exit 1; fi
+    if [ ! -e "$sshd" ]; then echo "SSH daemon not installed"; exit 1; fi
+    if ! ps -eF | grep -v "grep sshd" | grep sshd &>/dev/null; then echo "SSH Daemon is running, Run: service sshd start"; exit 1; fi
+    if [ ! -e "$rsync" ]; then echo "Keychain not found, you will be prompted for password"; fi
+    
 
     display_debug
 
@@ -178,17 +187,18 @@ test_mode() {
     main
     report
 
-    # Remove hosts entries
-    sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
-
     # Show output email
     echo "Email Output"
     cat /tmp/$script_name.tmp
+
+    # Remove hosts entries
+    sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
 
     # removed backup files
     for remote_client in $remote_clients
     do
         rm -rf $destination_directory/$remote_client
+	sed -i -e "/$remote_client/d" /root/.ssh/known_hosts
     done
 }
 
