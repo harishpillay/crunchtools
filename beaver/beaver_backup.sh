@@ -39,7 +39,10 @@ usage() {
 	echo "USAGE:"
 	echo "    $0 [options]"
 	echo "Where options is any of:"
-	echo "    f <file> - Get Rsync clients from <file>"
+        echo "    c <file> - Get config from <file>"
+	echo "    f <file> - Get clients list from <file>"
+        echo "    e <file> - Get excludes list from <file>"
+        echo "    i <file> - Get excludes list config from <file>"
 	echo "    s <directory> - Only backup certain directory"
 	echo "    v - Verbose"
 	echo "    h - Help"
@@ -62,19 +65,24 @@ get_config() {
 
 init() {
 
-
 	# Set Defaults
 	remote_clients_file=`get_config beaver_backup.list`
+        config_file=`get_config beaver_backup.conf`
+        exclude_list_file=`get_config beaver_backup.excludes`
+        include_list_file=`get_config beaver_backup.includes`
 	source_directory="/"
 	debug=0
-    test_mode=0
+        test_mode=0
 
 	# Get options
-	while getopts "f:s:tvh" options; do
+	while getopts "f:ceis:tvh" options; do
 		case $options in
 		f ) remote_clients_file="$OPTARG";;
+                c ) config_file="$OPTARG";;
+                e ) exclude_list_file="$OPTARG";;
+                i ) include_list_file="$OPTARG";;
 		s ) source_directory="$OPTARG";;
-        t ) test_mode=1;;
+                t ) test_mode=1;;
 		v ) debug=1;;
 		h ) usage;;
 		\? ) usage;;
@@ -120,7 +128,6 @@ init() {
 
     # Tunables
     ssh_options=""
-    config_file=`get_config beaver_backup.conf`
     source $config_file
 
     ## Variables
@@ -134,9 +141,9 @@ init() {
     short_wait=3
     long_wait=300
 
-    ## Exclude list logic
-    exclude_list_file=`get_config beaver_backup.excludes`
+    ## Exclude/include list logic
     exclude_list=`for i in \`cat $exclude_list_file\`; do echo -n " --exclude=\"$i\""; done`
+    include_list=`for i in \`cat $include_list_file\`; do echo -n " --include=\"$i\""; done`
 
     display_debug
 
@@ -176,7 +183,7 @@ test_mode() {
     # Test Dependancies
     if [ ! -e "$rsync" ]; then echo "Rsync not installed"; exit 1; fi
     if [ ! -e "$sshd" ]; then echo "SSH daemon not installed"; exit 1; fi
-    if ! ps -eF | grep -v "grep sshd" | grep sshd &>/dev/null; then echo "SSH Daemon is running, Run: service sshd start"; exit 1; fi
+    if ! ps -eF | grep -v "grep sshd" | grep sshd &>/dev/null; then echo "SSH Daemon is not running, Run: service sshd start"; exit 1; fi
     if [ ! -e "$rsync" ]; then echo "Keychain not found, you will be prompted for password"; fi
     
 
@@ -190,8 +197,9 @@ test_mode() {
     report
 
     # Show output email
-    echo "Email Output"
+    echo "Email Output: Hit Enter to Continue"
     cat /tmp/$script_name.tmp
+    read junk
 
     # Remove hosts entries
     sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
@@ -233,7 +241,7 @@ async_backup() {
 
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
-    command="$rsync $rsync_options --exclude=$job_id $exclude_list \
+    command="$rsync $rsync_options --exclude=$job_id $exclude_list $include_list\
         root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
 
 	debug "Running: $command"
