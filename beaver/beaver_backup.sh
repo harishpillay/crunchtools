@@ -131,7 +131,6 @@ init() {
     source $config_file
 
     ## Variables
-    job_id=`/bin/date | /usr/bin/md5sum | /bin/cut -f1  -d" "`
     remote_clients=`cat $remote_clients_file|grep -v ^#`
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
     rsync_fail_list=""
@@ -158,7 +157,6 @@ display_debug() {
 	debug "Beaver Backup Config: $config_file"
 	debug "Email: $email_address"
 	debug "Keychain Support: $keychain_support"
-	debug "Job ID: $job_id"
 	debug "Slots: $max_slots"
 	debug "Source Directory: $source_directory"
 	debug "Destination Directory: $destination_directory"
@@ -241,7 +239,7 @@ async_backup() {
 
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
-    command="$rsync $rsync_options --exclude=$job_id $exclude_list $include_list\
+    command="$rsync $rsync_options $exclude_list $include_list\
         root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
 
 	debug "Running: $command"
