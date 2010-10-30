@@ -70,12 +70,12 @@ init() {
         config_file=`get_config beaver_backup.conf`
         exclude_list_file=`get_config beaver_backup.excludes`
         include_list_file=`get_config beaver_backup.includes`
-	source_directory="/"
+	source_directory=""
 	debug=0
         test_mode=0
 
 	# Get options
-	while getopts "f:ceis:tvh" options; do
+	while getopts "f:c:e:i:s:tvh" options; do
 		case $options in
 		f ) remote_clients_file="$OPTARG";;
                 c ) config_file="$OPTARG";;
@@ -242,8 +242,13 @@ async_backup() {
     command="$rsync $rsync_options $exclude_list $include_list\
         root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
 
-	debug "Running: $command"
-    if $command
+    # Write command to file to avoid quoting/shell issues
+    echo $command > /tmp/${script_name}.rsync_command
+    debug "Running: $command"
+
+    # Run from the tmp command file, because there is problems on different
+    # shell/versions/operating systems and quoting
+    if sh /tmp/${script_name}.rsync_command
     then
         mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.success
     else
