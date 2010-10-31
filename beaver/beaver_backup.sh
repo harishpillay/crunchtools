@@ -120,7 +120,6 @@ init() {
 
     # Tunables
     ssh_options=""
-    max_snapshots=3
     source $config_file
 
     ## Variables
