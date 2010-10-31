@@ -177,6 +177,14 @@ option_scriptlog() {
     fi
 }
 
+safe_run() {
+
+    # Run from the tmp command file, because there is problems on different
+    # shell/versions/operating systems and quoting.
+    $echo $1 > /tmp/${script_name}.safe_command
+    sh /tmp/${script_name}.safe_command
+}
+
 used_slots() {
     ls /tmp/$script_name.*.running 2>/dev/null | wc -l || $echo 0
 }
@@ -257,14 +265,10 @@ async_backup() {
     command="$rsync $rsync_options $exclude_list $include_list\
         root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
 
-    # Write command to file to avoid quoting/shell issues
-    $echo $command > /tmp/${script_name}.rsync_command
     debug "Running: $command"
 
-    # Run from the tmp command file, because there is problems on different
-    # shell/versions/operating systems and quoting. Also, keep track of
-    # running processes using tmp files
-    if sh /tmp/${script_name}.rsync_command
+    # Keep track of running processes using tmp files
+    if safe_run "$command"
     then
         mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.success
     else
