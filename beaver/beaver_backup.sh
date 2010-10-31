@@ -268,14 +268,14 @@ rotate_snapshots() {
         let "penultimate = $ultimate - 1"
 
         $mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
-            "${destination_directory}/${remote_client}/current${ultimate}/"
+            "${destination_directory}/${remote_client}/current${ultimate}/" &>/dev/null
         
         let "ultimate = $penultimate"
         
     done
     
     $mv -f "${destination_directory}/${remote_client}/new/" \
-        "${destination_directory}/${remote_client}/current1/"
+        "${destination_directory}/${remote_client}/current1/" &>/dev/null
 
 }
 
