@@ -320,6 +320,9 @@ async_backup() {
         mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
     fi
 
+    # Timestamp the new backup
+    echo `date` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
+
     # Rotate directories    
     if [ "$snapshot_support" == "true" ]
     then
