@@ -111,7 +111,7 @@ init() {
     ## Turn on/off options
     option_keychain
     option_scriptlog
-    #option_snapshot
+    option_snapshot
     
     ## Log start time
     $scriptlog "Starting Backup"
@@ -119,6 +119,7 @@ init() {
 
     # Tunables
     ssh_options=""
+    max_snapshots=3
     source $config_file
 
     ## Variables
@@ -177,6 +178,17 @@ option_scriptlog() {
     fi
 }
 
+option_snapshot() {
+
+    ## find out if rsync supports snapshots
+    if rsync -h | grep link-dest &>/dev/null
+    then
+        snapshot_support="true"
+    else
+        snapshot_support="false"
+    fi
+}
+
 safe_run() {
 
     # Run from the tmp command file, because there is problems on different
@@ -196,8 +208,8 @@ test_mode() {
     remote_clients="server1.example.com server2.example.com server3.example.com"
     destination_directory="/tmp"
     debug=1
-    short_wait=5
-    long_wait=5
+    short_wait=1
+    long_wait=1
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
     ssh_options="-o StrictHostKeyChecking=no"
 
@@ -245,6 +257,28 @@ find_open_slot() {
     fi
 }
 
+rotate_snapshots() {
+    
+    ultimate=$max_snapshots
+    
+    rm -rf "${destination_directory}/${remote_client}/current${ultimate}"
+    
+    while [ $ultimate -ne 1 ]
+    do    
+        let "penultimate = $ultimate - 1"
+
+        mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
+            "${destination_directory}/${remote_client}/current${ultimate}/"
+        
+        let "ultimate = $penultimate"
+        
+    done
+    
+    mv -f "${destination_directory}/${remote_client}/new/" \
+        "${destination_directory}/${remote_client}/current1/"
+
+}
+
 async_backup() {
 ###############################################################################
 # Keep track of start/stop times
@@ -262,8 +296,19 @@ async_backup() {
 
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
-    command="$rsync $rsync_options $exclude_list $include_list\
-        root@${remote_client}:${source_directory}/ ${destination_directory}/${remote_client}/"
+
+    if [ "$snapshot_support" == "true" ]
+    then
+        command="$rsync $rsync_options $exclude_list $include_list \
+            --link-dest=${destination_directory}/${remote_client}/current1/
+            root@${remote_client}:${source_directory}/ \
+            ${destination_directory}/${remote_client}/new/"
+    else
+        command="$rsync $rsync_options $exclude_list $include_list \        
+            root@${remote_client}:${source_directory}/ \
+            ${destination_directory}/${remote_client}/new/"
+    fi
+
 
     debug "Running: $command"
 
@@ -273,6 +318,12 @@ async_backup() {
         mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.success
     else
         mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
+    fi
+
+    # Rotate directories    
+    if [ "$snapshot_support" == "true" ]
+    then
+        rotate_snapshots
     fi
 
     # Log time finished
