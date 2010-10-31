@@ -212,32 +212,56 @@ test_mode() {
     long_wait=1
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
     ssh_options="-o StrictHostKeyChecking=no"
+    test_runs=0
 
     # Test Dependancies
     if [ ! -e "$rsync" ]; then $echo "Rsync not installed"; exit 1; fi
     if [ ! -e "$sshd" ]; then $echo "SSH daemon not installed"; exit 1; fi
     if ! ps -eF | grep -v "grep sshd" | grep sshd &>/dev/null; then $echo "SSH Daemon is not running, Run: service sshd start"; exit 1; fi
     if [ ! -e "$rsync" ]; then $echo "Keychain not found, you will be prompted for password"; fi
-    
 
     display_debug
 
     # Add hosts entries
     $echo "127.0.0.1 ${remote_clients}" >> /etc/hosts
 
-    # Run main
-    main
-    report
+    # Run backup/report up to max snapshots and test each snapshot
+    while [ $test_runs -lt $max_snapshots ]
+    do
+        # Create test files to troubleshoot incremental backups
+        touch /etc/beaver_test${test_runs}.txt
+    
+        main
+        report
 
-    # Show output email
-    $echo "Email Output: Hit Enter to Continue"
-    $cat /tmp/$script_name.tmp
+        let "test_runs = test_runs + 1"
+    done
+
+    # Test correct number of files
+    echo "Incremental files: There should be 6 files for each server"
+    for remote_client in $remote_clients
+    do
+        echo ""
+        ls ${destination_directory}/${remote_client}/*/beaver_test*.txt
+    done
+
+    # pause, so that you can go manually investigate backup
+    $echo "Hit Enter to Continue"
     read junk
 
-    # Remove hosts entries
-    $sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
+    # Show output email
+    $echo ""
+    $echo "Email Output:"
+    $cat /tmp/$script_name.tmp
 
-    # removed backup files
+    # pause, so that you can go manually read the report
+    $echo "Hit Enter to Continue"
+    read junk
+
+    # Clean up after test: hosts, ssh, test files & backup files
+    $sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
+    rm -f /etc/beaver_test*.txt
+
     for remote_client in $remote_clients
     do
         $rm -rf $destination_directory/$remote_client
