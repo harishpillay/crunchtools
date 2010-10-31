@@ -105,6 +105,7 @@ init() {
     sshd=`which sshd`
     rsync=`which rsync`
     rm=`which rm`
+    mv=`which mv`
     sed=`which sed`
     scriptlog=`which echo`
 
@@ -261,20 +262,20 @@ rotate_snapshots() {
     
     ultimate=$max_snapshots
     
-    rm -rf "${destination_directory}/${remote_client}/current${ultimate}"
+    $rm -rf "${destination_directory}/${remote_client}/current${ultimate}"
     
     while [ $ultimate -ne 1 ]
     do    
         let "penultimate = $ultimate - 1"
 
-        mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
+        $mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
             "${destination_directory}/${remote_client}/current${ultimate}/"
         
         let "ultimate = $penultimate"
         
     done
     
-    mv -f "${destination_directory}/${remote_client}/new/" \
+    $mv -f "${destination_directory}/${remote_client}/new/" \
         "${destination_directory}/${remote_client}/current1/"
 
 }
