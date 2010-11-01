@@ -107,6 +107,7 @@ init() {
     rm=`which rm`
     mv=`which mv`
     sed=`which sed`
+    touch=`which touch`
     scriptlog=`which echo`
 
     ## Turn on/off options
@@ -294,6 +295,12 @@ rotate_snapshots() {
         $mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
             "${destination_directory}/${remote_client}/current${ultimate}/" &>/dev/null
         
+        if [ -e ${destination_directory}/${remote_client}/current${ultimate}/TIMESTAMP ]
+        then
+            $touch -t `$cat ${destination_directory}/${remote_client}/current${ultimate}/TIMESTAMP` \
+            ${destination_directory}/${remote_client}/current${ultimate}
+        fi
+        
         let "ultimate = $penultimate"
         
     done
@@ -347,7 +354,7 @@ ${destination_directory}/${remote_client}/new/"
     fi
 
     # Timestamp the new backup
-    echo `date` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
+    echo `date +"%Y%m%d%H%M%S"` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
 
     # Rotate directories    
     if [ "$snapshot_support" == "true" ]
