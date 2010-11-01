@@ -174,7 +174,7 @@ option_scriptlog() {
     if which scriptlog &>/dev/null
     then
         export scriptlog=`which scriptlog`
-        export scriptlog_rsync="$scriptlog -i 24 `which rsync`"
+        export scriptlog_rsync="$scriptlog -i 24 "
         export scriptlog_echo="$scriptlog -s "
         scriptlog_support="true"
     else
@@ -338,7 +338,7 @@ async_backup() {
         link_dest="--link-dest=${destination_directory}/${remote_client}/current1/"
     fi
     
-    command="$rsync $rsync_options $exclude_list $include_list \
+    command="$scriptlog_rsync $rsync $rsync_options $exclude_list $include_list \
 $link_dest \
 root@${remote_client}:${source_directory}/ \
 ${destination_directory}/${remote_client}/new/"
