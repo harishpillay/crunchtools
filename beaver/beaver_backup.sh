@@ -320,7 +320,7 @@ async_backup() {
 # Keep track of start/stop times
 ###############################################################################
 
-    $scriptlog_echo "Started client: $remote_client"
+    $scriptlog_echo "Started client: $remote_client, Parent: $$"
 
     touch /tmp/${script_name}.$remote_client.running
 
@@ -363,7 +363,7 @@ ${destination_directory}/${remote_client}/new/"
     fi
 
     # Log time finished
-    $scriptlog_echo "Finished client: $remote_client"
+    $scriptlog_echo "Finished client: $remote_client, Parent: $$"
 }
 
 run_job() {
