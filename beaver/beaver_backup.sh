@@ -120,7 +120,7 @@ init() {
 
     ## Variables
     remote_clients=`cat $remote_clients_file|grep -v ^#`
-    rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
+    rsync_options="-aq --timeout=${rsync_timeout} --delete --delete-excluded"
     link_dest=""
     rsync_fail_list=""
     rsync_success_list=""
