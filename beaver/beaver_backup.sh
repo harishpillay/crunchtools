@@ -126,6 +126,7 @@ init() {
     ## Variables
     remote_clients=`cat $remote_clients_file|grep -v ^#`
     rsync_options="-aq --timeout=${rsync_timeout} --delete-excluded"
+    link_dest=""
     rsync_fail_list=""
     rsync_success_list=""
     remote_client_number=0
@@ -139,8 +140,6 @@ init() {
 
     display_debug
 
-    # Setup logging
-    exec 3>/tmp/${script_name}.tmp
 }
 
 
@@ -150,7 +149,10 @@ display_debug() {
     debug "Beaver Backup List: $remote_clients_file";
     debug "Beaver Backup Config: $config_file"
     debug "Email: $email_address"
+    debug "Email Support: $email_support"
     debug "Keychain Support: $keychain_support"
+    debug "Scriptlog Support: $scriptlog_support"
+    debug "Snapshot Support: $snapshot_support"
     debug "Slots: $max_slots"
     debug "Source Directory: $source_directory"
     debug "Destination Directory: $destination_directory"
@@ -176,6 +178,9 @@ option_scriptlog() {
         export scriptlog=`which scriptlog`
         export rsync="$scriptlog -i 24 `which rsync`"
         export scriptlog="$scriptlog -s "
+        scriptlog_support="true"
+    else
+        scriptlog_support="false"
     fi
 }
 
@@ -354,7 +359,7 @@ ${destination_directory}/${remote_client}/new/"
     fi
 
     # Timestamp the new backup
-    echo `date +"%Y%m%d%H%M%S"` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
+    echo `date +"%Y%m%d%H%M.%S"` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
 
     # Rotate directories    
     if [ "$snapshot_support" == "true" ]
@@ -436,6 +441,9 @@ report () {
         fi
     done
 
+    # Setup logging
+    exec 3>/tmp/${script_name}.tmp
+
     # Reporting
     $echo "Rsync backup from $HOSTNAME: Completed, $remote_client_number client(s)" >&3
     $echo "" >&3
@@ -469,7 +477,11 @@ report () {
     fi
 
     # Send report
-    $cat /tmp/${script_name}.tmp|$mail -s "Beaver Backup Complete" $email_address
+    if [ "$email_support" == "true" ]
+    then
+        $cat /tmp/${script_name}.tmp|$mail -s "Beaver Backup Complete" $email_address
+    fi
+
 
     # Safety Net Cleanup
     rm -f /tmp/${script_name}.*.success
