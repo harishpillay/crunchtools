@@ -324,13 +324,15 @@ async_backup() {
     if [ "$snapshot_support" == "true" ]
     then
         command="$rsync $rsync_options $exclude_list $include_list \
-            --link-dest=${destination_directory}/${remote_client}/current1/
-            root@${remote_client}:${source_directory}/ \
-            ${destination_directory}/${remote_client}/new/"
+--link-dest=${destination_directory}/${remote_client}/current1/ \
+root@${remote_client}:${source_directory}/ \
+${destination_directory}/${remote_client}/new/"
+
     else
         command="$rsync $rsync_options $exclude_list $include_list \        
-            root@${remote_client}:${source_directory}/ \
-            ${destination_directory}/${remote_client}/new/"
+root@${remote_client}:${source_directory}/ \
+${destination_directory}/${remote_client}/new/"
+
     fi
 
 
