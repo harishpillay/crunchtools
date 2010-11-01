@@ -198,8 +198,9 @@ safe_run() {
 
     # Run from the tmp command file, because there is problems on different
     # shell/versions/operating systems and quoting.
-    $echo $1 > /tmp/${script_name}.safe_command
-    sh /tmp/${script_name}.safe_command
+    $echo $1 > /tmp/${script_name}.${remote_client}.safe_command
+    sh /tmp/${script_name}.${remote_client}.safe_command
+    $rm -f /tmp/${script_name}.${remote_client}.safe_command
 }
 
 used_slots() {
