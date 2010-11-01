@@ -333,20 +333,15 @@ async_backup() {
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
 
-    if [ "$snapshot_support" == "true" ]
+    if [ "$snapshot_support" == "true" ] && [ -e "${destination_directory}/${remote_client}/current1/" ]
     then
-        command="$rsync $rsync_options $exclude_list $include_list \
---link-dest=${destination_directory}/${remote_client}/current1/ \
-root@${remote_client}:${source_directory}/ \
-${destination_directory}/${remote_client}/new/"
-
-    else
-        command="$rsync $rsync_options $exclude_list $include_list \        
-root@${remote_client}:${source_directory}/ \
-${destination_directory}/${remote_client}/new/"
-
+        link_dest="--link-dest=${destination_directory}/${remote_client}/current1/"
     fi
-
+    
+    command="$rsync $rsync_options $exclude_list $include_list \
+$link_dest \
+root@${remote_client}:${source_directory}/ \
+${destination_directory}/${remote_client}/new/"
 
     debug "Running: $command"
 
