@@ -70,7 +70,6 @@ init() {
     config_file=`get_config beaver_backup.conf`
     exclude_list_file=`get_config beaver_backup.excludes`
     include_list_file=`get_config beaver_backup.includes`
-    source_directory=""
     debug=0
     test_mode=0
 
