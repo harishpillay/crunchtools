@@ -114,10 +114,6 @@ init() {
     option_keychain
     option_scriptlog
     option_snapshot
-    
-    ## Log start time
-    $scriptlog "Starting Backup"
-    start_time=`date`
 
     # Tunables
     ssh_options=""
@@ -140,6 +136,8 @@ init() {
 
     display_debug
 
+    ## Record start time
+    start_time=`date`
 }
 
 
@@ -176,10 +174,12 @@ option_scriptlog() {
     if which scriptlog &>/dev/null
     then
         export scriptlog=`which scriptlog`
-        export rsync="$scriptlog -i 24 `which rsync`"
-        export scriptlog="$scriptlog -s "
+        export scriptlog_rsync="$scriptlog -i 24 `which rsync`"
+        export scriptlog_echo="$scriptlog -s "
         scriptlog_support="true"
     else
+        export scriptlog_rsync=""
+        export scriptlog_echo="`which echo`"
         scriptlog_support="false"
     fi
 }
@@ -320,7 +320,7 @@ async_backup() {
 # Keep track of start/stop times
 ###############################################################################
 
-    $scriptlog "Backing up client: $remote_client"
+    $scriptlog_echo "Started client: $remote_client"
 
     touch /tmp/${script_name}.$remote_client.running
 
@@ -363,7 +363,7 @@ ${destination_directory}/${remote_client}/new/"
     fi
 
     # Log time finished
-    $scriptlog "Finished rsync client: $remote_client"
+    $scriptlog_echo "Finished client: $remote_client"
 }
 
 run_job() {
@@ -487,6 +487,9 @@ report () {
 
 # main
 init $*
+
+$scriptlog_echo "Started Backup Beaver: List: $remote_clients_file, Conf: $config_file, Exc: $config_file, Inc: $include_list_file"
+
 if [ $test_mode -eq 1 ]
 then
     test_mode
@@ -494,3 +497,5 @@ else
     main
     report
 fi
+
+$scriptlog_echo "Finished Backup Beaver: List: $remote_clients_file, Conf: $config_file, Exc: $config_file, Inc: $include_list_file"
