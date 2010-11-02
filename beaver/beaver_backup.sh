@@ -92,6 +92,7 @@ init() {
     # Initializations
 
     ## Commands
+    export PATH="$PATH:/sbin:/bin:/usr/sbin:/usr/bin"
     awk=`which awk`
     grep=`which grep`
     tail=`which tail`
