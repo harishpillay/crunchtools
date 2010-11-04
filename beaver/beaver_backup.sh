@@ -108,6 +108,7 @@ init() {
     mv=`which mv`
     sed=`which sed`
     touch=`which touch`
+    mkdir=`which mkdir`
     scriptlog=`which echo`
 
     ## Turn on/off options
@@ -323,10 +324,10 @@ async_backup() {
 
     $scriptlog_echo "Started client: $remote_client, Parent: $$"
 
-    touch /tmp/${script_name}.$remote_client.running
+    $touch /tmp/${script_name}.$remote_client.running
 
     # Create new destination directory
-    mkdir -p $destination_directory/$remote_client/new
+    $mkdir -p $destination_directory/$remote_client/new
 
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
