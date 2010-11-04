@@ -325,11 +325,8 @@ async_backup() {
 
     touch /tmp/${script_name}.$remote_client.running
 
-    # Check to see if destination directory exists
-    if [ ! -e $destination_directory/$remote_client ]
-    then
-        mkdir -p $destination_directory/$remote_client
-    fi
+    # Create new destination directory
+    mkdir -p $destination_directory/$remote_client/new
 
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
