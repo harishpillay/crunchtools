@@ -1,0 +1,101 @@
+#!/usr/bin/python
+###############################################################################
+# Written By: Scott McCcarty
+# Date: 1/2010
+# Description: Massage script to whip multiline data into shape for use with
+# petit
+###############################################################################
+
+from optparse import OptionParser
+from optparse import Values
+import signal
+import sys
+import logging
+sys.path.append("/usr/share/petit")
+from crunchtools.CrunchLog import Log
+
+# Process Signals
+def sigint_handler(signal, frame):
+    sys.exit(0)
+
+## Exit when control-C is pressed
+signal.signal(signal.SIGINT, sigint_handler)
+
+## Ignore problems when piping to head
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+
+# Use global namespace for flags and filename
+options = Values
+filename = ""
+
+def add_options(parser):
+    """Adds all options in one concise function"""
+
+    # Handle flags
+    parser.add_option("-v", "--verbose",
+                    dest="verbose",
+                    action="count",
+                    help="Show verbose output")
+
+    parser.add_option("--modsec",
+                    dest="mode",
+                    action="store_const",
+                    const="mode_modsec",
+                    default="mode_modsec",
+                    help="Masage ModSecrity log files into something consumable by petit")
+
+    return parser
+
+def get_options():
+    """Captures command line args and perform initializations"""
+
+    # Use global namespace for flags
+    global options
+    global filename
+
+    # Declarations & Variables
+    usage = "usage: %prog [options] [file]"
+    parser = OptionParser(usage)
+    parser = add_options(parser)
+
+    # parse options/args
+    (options, args) = parser.parse_args()
+
+    # Pull off file name
+    if len(args) > 1:
+        parser.error("Specify only one file")
+    elif len(args) == 1:
+        filename = args[0]
+    else:
+        filename = "__none__"
+
+    # Set Verbosity
+    log_level = logging.WARNING
+    if options.verbose == 1:
+        log_level = logging.INFO
+    elif options.verbose >= 2:
+        log_level = logging.DEBUG
+
+    # Set Verbosity
+    log_level = logging.WARNING
+    if options.verbose == 1:
+        log_level = logging.INFO
+    elif options.verbose >= 2:
+        log_level = logging.DEBUG
+
+    # Set up basic configuration
+    logging.basicConfig(level=log_level)
+
+
+    # Determine mode
+    eval(options.mode + "()")
+
+def mode_modsec():
+    log = Log(filename)
+
+    for entry in log:
+        print entry.log_entry
+
+if __name__ == "__main__":
+    get_options()
