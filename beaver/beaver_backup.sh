@@ -129,7 +129,7 @@ init() {
     remote_client_number=0
     script_name=`basename $0`
     short_wait=3
-    long_wait=300
+    long_wait=3
 
     ## Exclude/include list logic
     exclude_list=`for i in \`cat $exclude_list_file\`; do $echo -n " --exclude=\"$i\""; done`
@@ -347,9 +347,9 @@ ${destination_directory}/${remote_client}/new/"
     # Keep track of running processes using tmp files
     if safe_run "$command"
     then
-        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.${remote_client}.success
+        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.$$.${remote_client}.success
     else
-        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
+        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.$$.${remote_client}.failed
     fi
 
     # Timestamp the new backup
@@ -423,15 +423,15 @@ report () {
     for remote_client in $remote_clients
     do
         sleep $short_wait
-        if [ -e /tmp/${script_name}.${remote_client}.success ]
+        if [ -e /tmp/${script_name}.$$.${remote_client}.success ]
         then
             debug "Adding $remote_client to success list"
             rsync_success_list="$rsync_success_list $remote_client"
-            rm -f /tmp/${script_name}.$remote_client.success
+            rm -f /tmp/${script_name}.$$.$remote_client.success
         else
             debug "Adding $remote_client to fail list"
             rsync_fail_list="$rsync_fail_list $remote_client"
-            rm -f /tmp/${script_name}.$remote_client.failed
+            rm -f /tmp/${script_name}.$$.$remote_client.failed
         fi
     done
 
