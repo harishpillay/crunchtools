@@ -200,13 +200,13 @@ safe_run() {
 
     # Run from the tmp command file, because there is problems on different
     # shell/versions/operating systems and quoting.
-    $echo $1 > /tmp/${script_name}.${remote_client}.safe_command
-    sh /tmp/${script_name}.${remote_client}.safe_command
-    $rm -f /tmp/${script_name}.${remote_client}.safe_command
+    $echo $1 > /tmp/${script_name}.$$.${remote_client}.safe_command
+    sh /tmp/${script_name}.$$.${remote_client}.safe_command
+    $rm -f /tmp/${script_name}.$$.${remote_client}.safe_command
 }
 
 used_slots() {
-    ls /tmp/$script_name.*.running 2>/dev/null | wc -l || $echo 0
+    ls /tmp/$script_name.$$.*.running 2>/dev/null | wc -l || $echo 0
 }
 
 test_mode() {
@@ -260,7 +260,7 @@ test_mode() {
     # Show output email
     $echo ""
     $echo "Email Output:"
-    $cat /tmp/$script_name.tmp
+    $cat /tmp/$script_name.$$.tmp
 
     # pause, so that you can go manually read the report
     $echo "Hit Enter to Continue"
@@ -324,7 +324,7 @@ async_backup() {
 
     $scriptlog_echo "Started client: $remote_client, Parent: $$"
 
-    $touch /tmp/${script_name}.$remote_client.running
+    $touch /tmp/${script_name}.$$.$remote_client.running
 
     # Create new destination directory
     $mkdir -p $destination_directory/$remote_client/new
@@ -347,9 +347,9 @@ ${destination_directory}/${remote_client}/new/"
     # Keep track of running processes using tmp files
     if safe_run "$command"
     then
-        mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.success
+        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.${remote_client}.success
     else
-        mv /tmp/${script_name}.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
+        mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.${remote_client}.failed
     fi
 
     # Timestamp the new backup
@@ -436,7 +436,7 @@ report () {
     done
 
     # Setup logging
-    exec 3>/tmp/${script_name}.tmp
+    exec 3>/tmp/${script_name}.$$.tmp
 
     # Reporting
     $echo "Rsync backup from $HOSTNAME: Completed, $remote_client_number client(s)" >&3
@@ -473,14 +473,14 @@ report () {
     # Send report
     if [ "$email_support" == "true" ]
     then
-        $cat /tmp/${script_name}.tmp|$mail -s "Beaver Backup Complete" $email_address
+        $cat /tmp/${script_name}.$$.tmp|$mail -s "Beaver Backup Complete" $email_address
     fi
 
 
     # Safety Net Cleanup
-    rm -f /tmp/${script_name}.*.success
-    rm -f /tmp/${script_name}.*.failed
-    rm -f /tmp/${script_name}.*.running
+    rm -f /tmp/${script_name}.$$.*.success
+    rm -f /tmp/${script_name}.$$.*.failed
+    rm -f /tmp/${script_name}.$$.*.running
 }
 
 
