@@ -101,6 +101,7 @@ init() {
     wc=`which wc`
     echo=`which echo`
     cat=`which cat`
+	find=`which find`
     mail=`which mail`
     sshd=`which sshd`
     rsync=`which rsync`
@@ -478,9 +479,10 @@ report () {
 
 
     # Safety Net Cleanup
-    rm -f /tmp/${script_name}.$$.*.success
-    rm -f /tmp/${script_name}.$$.*.failed
-    rm -f /tmp/${script_name}.$$.*.running
+    $rm -f /tmp/${script_name}.$$.*.success
+    $rm -f /tmp/${script_name}.$$.*.failed
+    $rm -f /tmp/${script_name}.$$.*.running
+	$find /tmp/beaver_backup.sh.*.tmp -mmin +120 -exec rm -f {} \;
 }
 
 
