@@ -123,7 +123,7 @@ init() {
 
     ## Variables
     remote_clients=`cat $remote_clients_file|grep -v ^#`
-    rsync_options="-aq --timeout=${rsync_timeout} --delete --delete-excluded"
+    rsync_options="-av --stats --timeout=${rsync_timeout} --delete --delete-excluded"
     link_dest=""
     rsync_fail_list=""
     rsync_success_list=""
@@ -294,19 +294,19 @@ rotate_snapshots() {
     
     ultimate=$max_snapshots
     
-    $rm -rf "${destination_directory}/${remote_client}/current${ultimate}"
+    $rm -rf "${destination_directory}/${remote_client}/snapshot${ultimate}"
     
     while [ $ultimate -ne 1 ]
     do    
         let "penultimate = $ultimate - 1"
 
-        $mv -f "${destination_directory}/${remote_client}/current${penultimate}/" \
-            "${destination_directory}/${remote_client}/current${ultimate}/" &>/dev/null
+        $mv -f "${destination_directory}/${remote_client}/snapshot${penultimate}/" \
+            "${destination_directory}/${remote_client}/snapshot${ultimate}/" &>/dev/null
         
-        if [ -e ${destination_directory}/${remote_client}/current${ultimate}/TIMESTAMP ]
+        if [ -e ${destination_directory}/${remote_client}/snapshot${ultimate}/TIMESTAMP ]
         then
-            $touch -t `$cat ${destination_directory}/${remote_client}/current${ultimate}/TIMESTAMP` \
-            ${destination_directory}/${remote_client}/current${ultimate}
+            $touch -t `$cat ${destination_directory}/${remote_client}/snapshot${ultimate}/TIMESTAMP` \
+            ${destination_directory}/${remote_client}/snapshot${ultimate}
         fi
         
         let "ultimate = $penultimate"
@@ -314,7 +314,7 @@ rotate_snapshots() {
     done
     
     $mv -f "${destination_directory}/${remote_client}/new/" \
-        "${destination_directory}/${remote_client}/current1/" &>/dev/null
+        "${destination_directory}/${remote_client}/snapshot1/" &>/dev/null
 
 }
 
@@ -333,15 +333,18 @@ async_backup() {
     # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
 
-    if [ "$snapshot_support" == "true" ] && [ -e "${destination_directory}/${remote_client}/current1/" ]
+    if [ "$snapshot_support" == "true" ] && [ -e "${destination_directory}/${remote_client}/snapshot1/" ]
     then
-        link_dest="--link-dest=${destination_directory}/${remote_client}/current1/"
+        link_dest="--link-dest=${destination_directory}/${remote_client}/snapshot1/"
+		mail_dest="new/"
+	else
+		main_dest=""
     fi
     
     command="$scriptlog_rsync $rsync $rsync_options $exclude_list $include_list \
 $link_dest \
 root@${remote_client}:${source_directory}/ \
-${destination_directory}/${remote_client}/new/"
+${destination_directory}/${remote_client}/${main_dest}"
 
     debug "Running: $command"
 
