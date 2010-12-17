@@ -123,7 +123,7 @@ init() {
 
     ## Variables
     remote_clients=`cat $remote_clients_file|grep -v ^#`
-    rsync_options="-av --stats --timeout=${rsync_timeout} --delete --delete-excluded"
+    rsync_options="-aq --timeout=${rsync_timeout} --delete --delete-excluded"
     link_dest=""
     rsync_fail_list=""
     rsync_success_list=""
@@ -357,7 +357,7 @@ ${destination_directory}/${remote_client}/${main_dest}"
     fi
 
     # Timestamp the new backup
-    echo `date +"%Y%m%d%H%M.%S"` > "${destination_directory}/${remote_client}/new/TIMESTAMP"
+    echo `date +"%Y%m%d%H%M.%S"` > "${destination_directory}/${remote_client}/${main_dest}/TIMESTAMP"
 
     # Rotate directories    
     if [ "$snapshot_support" == "true" ]
