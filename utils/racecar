@@ -1,0 +1,324 @@
+#!/usr/bin/perl
+################################################################################
+#
+# Writen By: Scott McCarty
+# Date: 2/2009
+# Email: scott.mccarty@gmail.com, smccarty@eyemg.com
+# Version: 1.0
+# Description: Small script to give high level report of how web server is 
+# serving.
+#
+# Copyright (C) 2009 Scott McCarty
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+#################################################################################
+
+use Time::Local;
+
+# Set the correct cat command
+if ($ARGV[0] =~ m/gz/ ) {
+	$cat="/bin/zcat";
+}
+else {
+	$cat="/bin/cat";
+}
+
+###############################################################################
+# Setup all variables
+###############################################################################
+
+# Basic Variables 
+$total_requests=0;
+$total_bandwidth=0;
+%object_ip_requests = {};
+%object_requests = {};
+%filesize_library = {};
+$filesize_library_count=0;
+
+# Time/Date Variables
+$begin_date="";
+$end_date="";
+$seconds=0;
+
+# Request Variables
+@response_types = ("200","206","304","400","500","non20X");
+%response_count = {};
+%response_percent = {};
+%response_bandwidth = {};
+%response_kbps = {};
+
+# Object Request Variables
+@object_types = ("html", "pl", "css", "js", "txt", "jpg", "gif", "png", "flv", "swf", "pdf");
+%object_count = {};
+%object_percent = {};
+%object_bandwidth = {};
+%object_kbps = {};
+%object_duplicate_request_count = {};
+%object_duplicate_request_percent = {};
+%object_duplicate_request_bandwidth = {};
+%object_duplicate_request_kbps = {};
+
+my %months=('Jan'=>'01','Feb'=>'02','Mar'=>'03','Apr'=>'04','May'=>'05','Jun'=>'06','Jul'=>'07','Aug'=>'08','Sep'=>'09','Oct'=>'10','Nov'=>'11','Dec'=>'');
+
+sub initialize() {
+###############################################################################
+# Open log to calculate date boundries and library of file sizes
+###############################################################################
+
+	# Initialize all reponse code variables to zero
+	for $response_type (@response_types) {
+		$response_count{$response_type} = 0;
+		$response_bandwidth{$response_type} = 0;
+		$response_kbps{$response_type} = 0;
+	}
+
+	# Initialize all counts to zero
+	for $object_type (@object_types) {
+		$object_count{$object_type} = 0;
+		$object_bandwidth{$object_type} = 0;
+		$object_kbps{$object_type} = 0;
+		$object_duplicate_request_count{$object_type} = 0 ;
+		$object_duplicate_request_bandwidth{$object_type} = 0 ;
+		$object_duplicate_request_kbps{$object_type} = 0 ;
+	}
+
+	open(LOG, "$cat $ARGV[0]|") || die "Unable to open log file $ARGV[0]\n   ";
+	while (<LOG>) {
+
+		# Split each line into fields that make sense
+		($client_ip_address, $virtual_server,$junk1,$date,$junk2,$request_type,$file_requested,$http_version,$response_code,$bytes,@junk3) = split(" ",$_);
+
+		# Calculate Beginning Time
+		if ($filesize_library_count == 0 && ! $begin_date ) {
+			$begin_date=$date;
+		}
+
+		# Build library of object sizes
+		if ($response_code =~ m/200/) {
+
+			# Always set the file size to the last file found
+			$filesize_library{"$file_requested"} = $bytes;
+
+			# Only update the count if it hasn't been found before
+			if (!$filesize_library{"$file_requested"}) {
+				$filesize_library_count++;
+			}
+		}
+
+		# set end date
+		$end_date=$date;
+	}
+
+	close(LOG);
+
+	calculate_dates();
+
+}
+
+sub calculate_dates() {
+###############################################################################
+# Calculate dates for bandwidth reporting
+###############################################################################
+
+	# Clean up bracket from log file
+	($junk1, $begin_date) = split('\[',$begin_date);
+	($junk1, $end_date) = split('\[',$end_date);
+
+	# Calculate begin date parts
+	($date, $hour, $minute, $second) = split('\:', $begin_date);
+	($day, $month, $year) = split('\/', $date);
+	$month = $months{"$month"};
+	$begin_time = timelocal($second,$minute,$hour,$day,$month,$year);
+
+	# Calculate end date parts
+	($date, $hour, $minute, $second) = split('\:', $end_date);
+	($day, $month, $year) = split('\/', $date);
+	$month = $months{"$month"};
+	$end_time = timelocal($second,$minute,$hour,$day,$month,$year);
+
+	# Calculate seconds in between begining and end
+	$seconds = $end_time - $begin_time;
+
+}
+
+sub process() {
+###############################################################################
+# Open web log for response code and file type processing
+###############################################################################
+
+	open(LOG, "$cat $ARGV[0]|") || die "Unable to open log file $ARGV[0]\n   ";
+	while (<LOG>) {
+
+		# Split each line into fields that make sense
+		($client_ip_address, $virtual_server,$junk1,$date,$junk2,$request_type,$file_requested,$http_version,$response_code,$bytes,@junk3) = split(" ",$_);
+
+		# Calculate file requests for each type of respnose code
+		if ($response_code =~ m/200/) {
+
+			# Increment 200 requests
+			$response_count{"200"}++;
+
+			# Calculate bandwidth usage of 200 requests
+			$response_bandwidth{"200"} = $response_bandwidth{"200"} + $bytes;
+
+			# Increment same client/same object requests
+			$object_ip_requests{"$client_ip_address$file_requested"}++;
+
+			# Check if if same client has request the same object more 
+			# than once 
+			if ($object_ip_requests{"$client_ip_address$file_requested"} > 1) {
+				#print "Incrementing: $client_ip_address$file_requested: ".$object_ip_requests{"$client_ip_address$file_requested"}."\n";
+				#$object_rerequests{$file_requested}++;
+				#print "Object: $file_requested Value: $object_rerequests{$file_requested}\n";
+
+				# Calculate number of requests and bandwidth usage
+				# for each file type that we are reporting
+				for $object_type (@object_types) {
+					if ($file_requested =~ m/\.$object_type/) {
+						$object_duplicate_request_count{$object_type}++;
+						$object_duplicate_request_bandwidth{$object_type} = $object_duplicate_request_bandwidth{$object_type} + $bytes;
+                	                        }
+				}
+			}
+		}
+
+		if ($response_code =~ m/206/) {
+			$response_count{"206"}++;
+			$response_bandwidth{"206"} = $response_bandwidth{"206"} + $bytes;
+		}
+		if ($response_code =~ m/304/) {
+			$response_count{"304"}++;
+			$response_bandwidth{"304"} = $response_bandwidth{"304"} + $filesize_library{"$file_requested"};
+		}
+		if ($response_code !~ m/200/ && $response_code !~ m/206/) {
+			$response_count{"non20X"}++;
+			#$response_bandwidth{"non20X"} = $response_bandwidth{"non20X"} + $filesize_library{"$file_requested"};
+			$response_bandwidth{"non20X"} = $response_bandwidth{"non20X"} + $bytes;
+		}
+		if ($response_code =~ m/4[0-9][0-9]/) {
+			$response_count{"400"}++;
+		}
+		if ($response_code =~ m/5[0-9][0-9]/) {
+			$response_count{"500"}++;
+		}
+
+		# Calculate file requests for text based files
+		for $object_type (@object_types) {
+			if ($file_requested =~ m/\.$object_type/) {
+				$object_count{$object_type}++;
+				$object_bandwidth{$object_type} = $object_bandwidth{$object_type} + $bytes;
+			}
+		}
+	
+		$total_requests++;
+
+	}
+
+	close LOG;
+}
+
+sub calculate_statistics() {
+###############################################################################
+# Calculate bandwidth & throughput
+###############################################################################
+
+	for $object_type (@object_types) {
+
+		# Calculate % of total requests for each file type
+		$object_percent{$object_type} = int(100 * $object_count{$object_type} / $total_requests);
+		$object_duplicate_request_percent{$object_type} = int(100 * $object_duplicate_request_count{$object_type} / $total_requests);
+
+		# Calculate Bandwidth
+		$object_bandwidth{$object_type} = int($object_bandwidth{$object_type} / 1024);
+		$object_duplicate_request_bandwidth{$object_type} = int($object_duplicate_request_bandwidth{$object_type} / 1024);
+
+		# Calculate Kbps
+		$object_kbps{$object_type} = int($object_bandwidth{$object_type} * 8 / $seconds);
+		$object_duplicate_request_kbps{$object_type} = int($object_duplicate_request_bandwidth{$object_type} * 8 / $seconds);
+	}
+
+
+	for $response_type (@response_types) {
+
+		# Calculate % of total requests for each file type
+		$response_percent{$response_type} = int(100 * $response_count{$response_type} / $total_requests);
+
+		# Calculate Bandwidth
+		$response_bandwidth{$response_type} = int($response_bandwidth{$response_type} / 1024);
+
+		# Calculate Kbps
+		$response_kbps{$response_type} = int($response_bandwidth{$response_type} * 8 / $seconds);
+	}
+	# Calculate Kilobytes of bandwidth utilized
+	$twohundred_bandwidth = int($twohundred_bandwidth / 1024);
+	$cache_bandwidth = int($cache_bandwidth / 1024);
+	$nontwohundred_bandwidth = int($nontwohundred_bandwidth / 1024);
+
+	# Calculate Kbps
+	$twohundred_kbps = int($twohundred_bandwidth * 8 / $seconds);
+	$cache_kbps = int($cache_bandwidth * 8 / $seconds);
+	$nontwohundred_kbps = int($nontwohundred_bandwidth * 8 / $seconds);
+	
+}
+
+sub report() {
+###############################################################################
+# Report:qing
+###############################################################################
+	print "\n";
+	print "Executive Summary ($ARGV[0])\n";
+	print "#########################################################################\n";
+	print "Begin Date: $begin_date\n";
+	print "End Date: $end_date\n";
+	print "Seconds Elapsed: $seconds\n";
+	print "Total Requests: $total_requests\n";
+	print "Unique Objects Analyzed: $filesize_library_count\n";
+	#print "End Date Unix: $end_time\n";
+	#print "Begin Date Unix: $begin_time\n";
+
+	print "\n";
+	print "Object Requests by Response Code \n";
+	print "#########################################################################\n";
+	print "Type     Count   Percent   Bandwidth            Kbps\n";
+	print "#########################################################################\n";
+	#printf("%-4s %7d %7d%% %11dK %11dKbps\n",);
+	for $response_type (@response_types) {
+		printf("%-6s %7d %7d%% %11dK %11dKbps\n", $response_type,$response_count{$response_type},$response_percent{$response_type},$response_bandwidth{$response_type},$response_kbps{$response_type});
+	}
+
+	print "\n";
+	print "Object Requests by File Type \n";
+	print "#########################################################################\n";
+	print "Type   Count   Percent   Bandwidth            Kbps\n";
+	print "#########################################################################\n";
+	for $object_type (@object_types) {
+		printf("%-4s %7d %7d%% %11dK %11dKbps\n", $object_type,$object_count{$object_type},$object_percent{$object_type},$object_bandwidth{$object_type},$object_kbps{$object_type} );
+	}
+
+	print "\n";
+	print "Duplicate Object Requests by File Type (from same client)\n";
+	print "#########################################################################\n";
+	print "Type   Count   Percent   Bandwidth            Kbps\n";
+	print "#########################################################################\n";
+	for $object_type (@object_types) {
+		printf("%-4s %7d %7d%% %11dK %11dKbps\n", $object_type,$object_duplicate_request_count{$object_type},$object_duplicate_request_percent{$object_type},$object_duplicate_request_bandwidth{$object_type},$object_duplicate_request_kbps{$object_type} );
+	}
+}
+
+initialize();
+process();
+calculate_statistics();
+report();
