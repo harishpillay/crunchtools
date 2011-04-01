@@ -16,12 +16,12 @@ if ($_SERVER["argc"] == 5 || ($_SERVER["argv"][1] == "status" && $_SERVER["argc"
 	$password = $_SERVER["argv"][4];
 
 	if (@mysql_connect($host, $username, $password)) {
-		$result_stat = @mysql_query("SHOW STATUS");
+		$result_stat = @mysql_query("SHOW /*!50002 GLOBAL */ STATUS");
 		while ($fld_stat = @mysql_fetch_row($result_stat)) {
 			$status[$fld_stat[0]] = $fld_stat[1];
 		}
 
-		$result_var = @mysql_query("SHOW VARIABLES");
+		$result_var = @mysql_query("SHOW /*!50002 GLOBAL */ VARIABLES");
 		while ($fld_var = @mysql_fetch_row($result_var)) {
 			$variables[$fld_var[0]] = $fld_var[1];
 		}
