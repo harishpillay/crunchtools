@@ -3,7 +3,7 @@
 		<name>MySQL - Single Statistics</name>
 		<graph>
 			<t_title>on</t_title>
-			<title>|host_description| - MySQL -</title>
+			<title>|host_description| - MySQL - Single Statistics</title>
 			<t_image_format_id></t_image_format_id>
 			<image_format_id>1</image_format_id>
 			<t_height></t_height>
@@ -103,10 +103,10 @@
 		</inputs>
 	</hash_000021d1dd0e928f295196fe6fd776a49e520d>
 	<hash_010021bffb67d5859a8bacb5a04db5eed2fa2a>
-		<name>MySQL - Single statistics</name>
+		<name>MySQL - Single Statistics</name>
 		<ds>
 			<t_name>on</t_name>
-			<name>|host_description| - MySQL -</name>
+			<name>|host_description| - MySQL - Single Statistics</name>
 			<data_input_id>hash_030021cf6f050b7e61e18ab731e066eae934db</data_input_id>
 			<t_rra_id></t_rra_id>
 			<t_rrd_step></t_rrd_step>
