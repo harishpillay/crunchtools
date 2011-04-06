@@ -50,24 +50,56 @@ install() {
 	exit
 }
 
+# Cacti CLI functions
+add_device() {
+	php $cli/add_device.php --description="$1" --ip="$1" --community="$community" --template=0
+}
+
+add_tree() {
+	php $cli/add_tree.php --type=node --node-type=host --host-id="$1"
+}
+
+add_graph() {
+		php $cli/add_graphs.php \
+			--graph-template-id=$1 \
+			--host-id=$2 \
+			--graph-type=cg \
+			--input-fields="username=$mysql_mystats_username password=$mysql_mystats_password"
+}
+
 import_template() {
 	cd $cli
-	php import_template.php --filename=$gms_home/$1
+	php import_template.php --filename=$src/$1
 	cd -
 }
 
+get_template_ids() {
+	php $cli/add_graphs.php --list-graph-templates | grep "$1" | cut -f1
+}
+
+get_host_id() {
+	php $cli/add_graphs.php --list-hosts | grep $1 | cut -f1
+}
+
+poll_cacti() {
+	sudo -uapache php $cacti_home/poller.php -d --force
+}
+
+# Plugin installs
 mysql_stats() {
 
 	# Set up variables
 	source ./install_cacti.config
-	gms_home="`pwd`/graph_mysql_stats"
+
+	# Get relative full path
+	src="`dirname $PWD`/graph_mysql_stats"
 
 	# Install server side script
-	cp $gms_home/mysql_stats.php $cacti_home/scripts || "Check directory $cacti_home/scripts"
+	cp $src/mysql_stats.php $cacti_home/scripts || "Check directory $cacti_home/scripts"
 
 	# Create test host
-	php $cli/add_device.php --description="$cts" --ip=$cts --community="$community" --template=0
-	php $cli/add_tree.php --type=node --node-type=host --host-id=2
+	add_device $cacti_test_server
+	add_tree 2
 
 	# Import templates
 	import_template cacti_graph_template_mysql_command_statistics.xml
@@ -80,17 +112,17 @@ mysql_stats() {
 	import_template cacti_graph_template_mysql_traffic.xml
 
 	# Enumerate IDs of MySQL templates
-	template_ids=`php $cli/add_graphs.php --list-graph-templates | grep MySQL | cut -f1`
-	host_id=`php $cli/add_graphs.php --list-hosts | grep $cts | cut -f1`
+	template_ids=`get_template_ids MySQL`
+	host_id=`get_host_id $cacti_test_server`
 
 	# Import the graph templates
-	for id in $template_ids
+	for template_id in $template_ids
 	do
-		php $cli/add_graphs.php --graph-template-id=$id --host-id=$host_id --graph-type=cg --input-fields="username=$mysql_mystats_username password=$mysql_mystats_password"
+		add_graph $template_id $host_id
 	done
 
 	# Run the poller
-	sudo -uapache /usr/bin/php /usr/web/cacti-test/poller.php -d --force
+	poll_cacti
 }
 
 init $*
