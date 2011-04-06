@@ -1,10 +1,10 @@
 README 
 mysql_stats.php
-version 2.0
+version 2.0.1
 enables cacti to read mysql statistics
-by berger@hk-net.de 2005/01/18
-
-
+support: Scott McCarty <scott.mccarty@gmail.com>
+author: Otto Berger berger@hk-net.de
+date: 2005/01/18 - 2011
 
 INSTALLATION
 ============
