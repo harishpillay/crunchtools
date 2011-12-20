@@ -203,7 +203,6 @@ safe_run() {
     # shell/versions/operating systems and quoting.
     $echo $1 > /tmp/${script_name}.$$.${remote_client}.safe_command
     sh /tmp/${script_name}.$$.${remote_client}.safe_command
-    $rm -f /tmp/${script_name}.$$.${remote_client}.safe_command
 }
 
 used_slots() {
@@ -214,8 +213,12 @@ test_mode() {
 
     # Override variables
     source_directory="/etc"
-    remote_clients="server1.example.com server2.example.com server3.example.com"
+    remote_clients_success="server1.example.com server2.example.com server3.example.com"
+    remote_clients_fail="server4.example.com"
+    remote_clients="$remote_clients_success $remote_clients_fail"
     destination_directory="/tmp"
+    snapshot_support="true"
+    max_snapshots=3
     debug=1
     short_wait=1
     long_wait=1
@@ -232,7 +235,10 @@ test_mode() {
     display_debug
 
     # Add hosts entries
-    $echo "127.0.0.1 ${remote_clients}" >> /etc/hosts
+    $echo "127.0.0.1 ${remote_clients_success}" >> /etc/hosts
+    $echo "1.1.1.1 ${remote_clients_fail}" >> /etc/hosts
+
+    # Test snapshot backups
 
     # Run backup/report up to max snapshots and test each snapshot
     while [ $test_runs -lt $max_snapshots ]
@@ -247,7 +253,7 @@ test_mode() {
     done
 
     # Test correct number of files
-    echo "Incremental files: There should be 6 files for each server"
+    echo "Incremental files: There should be 6 files for each server. server4.example.com should fail"
     for remote_client in $remote_clients
     do
         echo ""
@@ -267,8 +273,44 @@ test_mode() {
     $echo "Hit Enter to Continue"
     read junk
 
-    # Clean up after test: hosts, ssh, test files & backup files
-    $sed -i -e "/127.0.0.1 ${remote_clients}/d" /etc/hosts
+    # Clean up
+    for remote_client in $remote_clients
+    do
+        $rm -rf $destination_directory/$remote_client
+	$sed -i -e "/$remote_client/d" /root/.ssh/known_hosts
+    done
+
+    # Test regular backup
+
+    # Remove snapshot support
+    snapshot_support="false"
+    max_snapshots=0
+
+    main
+    report
+
+    # Test correct number of files
+    echo "Incremental files: There should be 3 files for each server. server4.example.com should fail"
+    for remote_client in $remote_clients
+    do
+        echo ""
+        ls ${destination_directory}/${remote_client}/beaver_test*.txt
+    done
+
+    # pause, so that you can go manually investigate backup
+    $echo "Hit Enter to Continue"
+    read junk
+
+    # Clean up
+    for remote_client in $remote_clients
+    do
+        $rm -rf $destination_directory/$remote_client
+	$sed -i -e "/$remote_client/d" /root/.ssh/known_hosts
+    done
+
+    # Final clean up after test: hosts, ssh, test files & backup files
+    $sed -i -e "/127.0.0.1 ${remote_clients_success}/d" /etc/hosts
+    $sed -i -e "/1.1.1.1 ${remote_clients_fail}/d" /etc/hosts
     rm -f /etc/beaver_test*.txt
 
     for remote_client in $remote_clients
@@ -318,30 +360,25 @@ rotate_snapshots() {
 
 }
 
-async_backup() {
-###############################################################################
-# Keep track of start/stop times
-###############################################################################
-
-    $scriptlog_echo "Started client: $remote_client, Parent: $$"
-
-    $touch /tmp/${script_name}.$$.$remote_client.running
+rsync_backup() {
 
     # Create new destination directory
     $mkdir -p $destination_directory/$remote_client/new
 
-    # Perform Backup
     export RSYNC_RSH="ssh $ssh_options -o ConnectTimeout=${ssh_timeout} -o ConnectionAttempts=3"
 
-    if [ "$snapshot_support" == "true" ] && [ -e "${destination_directory}/${remote_client}/snapshot1/" ]
+    #if [ "$snapshot_support" == "true" ] && [ -e "${destination_directory}/${remote_client}/snapshot1/" ]
+    if [ "$snapshot_support" == "true" ]
     then
         link_dest="--link-dest=${destination_directory}/${remote_client}/snapshot1/"
-		mail_dest="new/"
+		main_dest="new/"
 	else
 		main_dest=""
     fi
     
-    command="$scriptlog_rsync $rsync $rsync_options $exclude_list $include_list \
+    command="$scriptlog_rsync $rsync $rsync_options \
+$exclude_list \
+$include_list \
 $link_dest \
 root@${remote_client}:${source_directory}/ \
 ${destination_directory}/${remote_client}/${main_dest}"
@@ -356,14 +393,30 @@ ${destination_directory}/${remote_client}/${main_dest}"
         mv /tmp/${script_name}.$$.${remote_client}.running /tmp/${script_name}.$$.${remote_client}.failed
     fi
 
+    # Clean up command file after test is completed
+    $rm -f /tmp/${script_name}.$$.${remote_client}.safe_command
+
     # Timestamp the new backup
     echo `date +"%Y%m%d%H%M.%S"` > "${destination_directory}/${remote_client}/${main_dest}/TIMESTAMP"
 
     # Rotate directories    
-    if [ "$snapshot_support" == "true" ]
+    if [ "$snapshot_support" == "true" ] && [ $max_snapshots -gt 0 ]
     then
         rotate_snapshots
     fi
+}
+
+async_backup() {
+###############################################################################
+# Keep track of start/stop times
+###############################################################################
+
+    $scriptlog_echo "Started client: $remote_client, Parent: $$"
+
+    $touch /tmp/${script_name}.$$.$remote_client.running
+
+    # Perform Backup
+    rsync_backup
 
     # Log time finished
     $scriptlog_echo "Finished client: $remote_client, Parent: $$"
