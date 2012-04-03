@@ -24,12 +24,12 @@ cacti-machine to the mysql-status informations, you must have the
 Use for example the following mysql-command to set the process-right for the
 mysql-user "cactiuser" with the password "cactipasswd":
 
-GRANT PROCESS ON * TO cactiuser@'localhost' IDENTIFIED by 'cactipasswd';
+GRANT PROCESS ON *.* TO cactiuser@'localhost' IDENTIFIED by 'cactipasswd';
 
 To monitor a foreign host, fill in the hostname where you came from, 
 for example:
 
-GRANT PROCESS ON * TO cactiuser@'cactihost.com' IDENTIFIED by 'cactipasswd';
+GRANT PROCESS ON *.* TO cactiuser@'cactihost.com' IDENTIFIED by 'cactipasswd';
 
 
 GRAPH CREATION
