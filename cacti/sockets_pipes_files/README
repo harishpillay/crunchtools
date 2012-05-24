@@ -13,25 +13,25 @@ under optimal usage of server hardware, one would expect spikes in CPU, RAM,
 and I/O.
 
 For further info see:
-    http://crunchtools.com
+    http://crunchtools.com/software/crunchtools/cacti/graph-sockets-pipes-files/
 
 Installation
 ===============================================================================
 
-There are two components to the configuration
-1. Cacti Server: The cacti server has a poller script. Also, there is a Nagios
-   check which uses the same OID.
-2. Polled Node: The polled node has an embedded perl module which extends
-   net-snmp to support the OID .1.3.6.1.4.1.2021.54
-
 Cacti Server: Import XML template on the cacti server
     spf_cacti.xml
 
-Cacti Server: Copy the poller script
+Cacti Server: Copy the poller script.
     /var/www/html/cacti/scripts/spf_poller.sh
+
+Polled Node: Install the perl/net-snmp software
+    yum install -y net-snmp-perl
 
 Polled Node: Copy the embeded AgentX Perl module to the client
     /etc/snmp/spf.pl
 
 Polled Node: Configure snmp
     perl do '/etc/snmp/spf.pl';
+
+Polled Node: Restart net-snmpd
+    service snmpd restart
