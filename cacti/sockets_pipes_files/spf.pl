@@ -41,11 +41,14 @@ sub poll {
 	# Hack to handle the lack of background subroutines in perl
 	# There are CPAN modules, but I didn't want users to have
 	# to install such things for such a small program :-)
+	#
+	# The mv operation is an old Unix trick to guarantee
+	# that there will always be data in the file when read
 	 
-	system("lsof -Ft 2>&1 | grep FIFO | wc -l > /$tmp/spf_pipes &");
-	system("netstat -anp | grep tcp | wc -l > /$tmp/spf_tcp &");
-	system("netstat -anp | grep udp | wc -l > /$tmp/spf_udp &");
-	system("netstat -anp | grep unix | wc -l > /$tmp/spf_unix &");
+	system("(lsof -Ft 2>&1 | grep FIFO | wc -l > /$tmp/spf_pipes.tmp;mv /$tmp/spf_pipes.tmp /$tmp/spf_pipes) &");
+	system("(netstat -anp | grep tcp | wc -l > /$tmp/spf_tcp.tmp;mv /$tmp/spf_tcp.tmp /$tmp/spf_tcp) &");
+	system("(netstat -anp | grep udp | wc -l > /$tmp/spf_udp.tmp;mv /$tmp/spf_udp.tmp /$tmp/spf_udp) &");
+	system("(netstat -anp | grep unix | wc -l > /$tmp/spf_unix.tmp;mv /$tmp/spf_unix.tmp /$tmp/spf_unix) &");
 }
 
 sub refresh_data {
@@ -87,7 +90,6 @@ sub myhandler {
 				$request->setOID("$spf_oid.101.1");
 				$request->setValue(ASN_OCTET_STR, $value);
 			}
-
 		}
 	}
 }
