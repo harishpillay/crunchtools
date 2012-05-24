@@ -18,18 +18,20 @@ For further info see:
 Installation
 ===============================================================================
 
-There is both a server component and a node component
+There are two components to the configuration
+1. Cacti Server: The cacti server has a poller script. Also, there is a Nagios
+   check which uses the same OID.
+2. Polled Node: The polled node has an embedded perl module which extends
+   net-snmp to support the OID .1.3.6.1.4.1.2021.54
 
-Cacti Server
-Import XML template on the cacti server
-sockets_pipes_files_template.xml
+Cacti Server: Import XML template on the cacti server
+    sockets_pipes_files_template.xml
 
-Copy the poller script out to the cacti server
-/usr/web/cacti/scripts/sockets_pipes_files_poller.sh
+Cacti Server: Copy the poller script
+    /var/www/html/cacti/scripts/spf_poller.sh
 
-Remote Node
-Copy the client script to the client
-    /usr/local/bin/sockets_pipes_files_client.sh
+Polled Node: Copy the embeded AgentX Perl module to the client
+    /etc/snmp/spf.pl
 
-Configure snmp on the client to have the following line
-    sh .1.3.6.1.4.1.2021.54 sockets_pipes_files /usr/local/bin/sockets_pipes_files_client.sh
+Polled Node: Configure snmp
+    perl do '/etc/snmp/spf.pl';
