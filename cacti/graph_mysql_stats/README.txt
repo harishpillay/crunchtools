@@ -1,74 +1,73 @@
-README 
-mysql_stats.php
-version 2.0.1
-enables cacti to read mysql statistics
-support: Scott McCarty <scott.mccarty@gmail.com>
-author: Otto Berger berger@hk-net.de
-date: 2005/01/18 - 2011
+README
+======
+description: enables cacti to read mysql statistics
+files: mysql_stats.php and associated graph templates
+version: 2.5.0
+author: Otto Berger <berger{at}hk-net{dot}de> 2004 - 2011
+support: Scott McCarty <scott{dot}mccarty{at}gmail{dot}com> 2011 - 2012
+date: date: 2005/01/18 - 2012
+
+contributors:
+Kyle Milnes 2012/04 https://bit.ly/kyle0r
+dainiookas 2012/03 https://bit.ly/HN2F6A
+
+Full docs at http://crunchtools.com/software/crunchtools/cacti/graph-mysql-stats/
 
 INSTALLATION
 ============
+1. Put the mysql_stats.php file inside the cacti/scripts/ directory
+2. Import the .xml files using the cacti web interface
+   Cacti -> Console -> Import/Export -> Import Templates
+3. Create graphs
+   Cacti -> Console -> Create -> New Graphs
 
-1. put the mysql_stats.php file inside the cacti/scripts/ directory
-2. import the .xml-Files using the cacti webinterface
+The script and templates have been tested up to cacti 0.8.7i
 
-To upgrade a previous installation, have a look below.
 
-USAGE
-=====
-
-Configure the mysql-server you want to graph. To enable access from the
-cacti-machine to the mysql-status informations, you must have the 
+MYSQL SET UP
+============
+Configure your mysql-server(s) you want to graph. To enable access from the
+cacti-machine to the mysql-status information, you must have the
 "process" right.
 
-Use for example the following mysql-command to set the process-right for the
-mysql-user "cactiuser" with the password "cactipasswd":
+For example, the following mysql-command to set the process-right for the
+mysql-user "cacti-stats" with the password "cacti-passwd":
 
-GRANT PROCESS ON *.* TO cactiuser@'localhost' IDENTIFIED by 'cactipasswd';
-
-To monitor a foreign host, fill in the hostname where you came from, 
-for example:
-
-GRANT PROCESS ON *.* TO cactiuser@'cactihost.com' IDENTIFIED by 'cactipasswd';
-
+CREATE USER 'cacti_stats'@'your-host.local' IDENTIFIED BY 'cacti-passwd';
+GRANT PROCESS ON *.* TO 'cacti_stats'@'your-host.local' IDENTIFIED BY 'cacti-passwd'
+WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
 
 GRAPH CREATION
 ==============
-
 1. Click inside cacti on "New Graphs"
-2. Choose host and a mysql-template
+2. Choose host and a MySQL - *something* template
 3. Click create
-4. Fill in the MySQL-username and password as specified obove
+4. Adjust the MySQL port, username and password as required for the given server
 5. Finished!
 
+Automation of adding the graphs is possible, via cli/add_graphs.php.
+Further reading at http://crunchtools.com/software/crunchtools/cacti/graph-mysql-stats/
+
+TROUBLESHOOTING
+===============
+Feel free to run the mysql_stats.php script from the command line with some relevant parameters,
+to check connectivity etc.
+
+$ php mysql_stats.php preset db_host[:db_port] db_user db_password [status_section]
+
+presets are: q_cache, cache, command, handler, thread, traffic, status
+if preset 'status' is supplied, the script expects status_section to be supplied.
+status_section represents an associative array index, from the status results.
+Further reading: http://dev.mysql.com/doc/refman/5.0/en/mysqld-option-tables.html
+
+Check the cacti logs if your having problems, you can also run the php script from the command
+line to test things manually. Don't forget you can adjust the logging verbosity in:
+Cacti -> Console -> Configuration -> Settings -> General -> Poller Logging Level
 
 UPGRADE
 =======
+see UPGRADE.txt
 
-Put the new mysql_stats.php file inside the cacti/scripts/ directory
-You can now delete the other mysql_* php-files...
-
---> Normally the import of the xml-files using the cacti-interface
---> would be enough to upgrade.
-
-
-In case of errors, or to prevent them, you have to edit the 
-"data input methods" manually through the webinterface. For each MySQL-
-input method you have to change the input string to one of the following:
-
-MySQL - QCache statistics:
-<path_php_binary> -q <path_cacti>/scripts/mysql_stats.php cache <hostname> <username> <password>
-
-MySQL - Single Statistics:
-<path_php_binary> -q <path_cacti>/scripts/mysql_stats.php status <hostname> <username> <password> <query>
-
-MySQL - Handler statistics:
-<path_php_binary> -q <path_cacti>/scripts/mysql_stats.php handler <hostname> <username> <password>
-
-MySQL - Command statistics:
-<path_php_binary> -q <path_cacti>/scripts/mysql_stats.php command <hostname> <username> <password>
-
-MySQL - Thread statistics:
-<path_php_binary> -q <path_cacti>/scripts/mysql_stats.php thread <hostname> <username> <password>
-
-
+HISTORY
+=======
+see HISTORY.txt

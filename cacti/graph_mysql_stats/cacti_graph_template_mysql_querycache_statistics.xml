@@ -264,19 +264,24 @@
 			<item_001>
 				<data_input_field_id>hash_07002164a05dd4587445a92592725e5c48e7f2</data_input_field_id>
 				<t_value>on</t_value>
-				<value></value>
+				<value>cacti_stats</value>
 			</item_001>
 			<item_002>
 				<data_input_field_id>hash_070021fabb3f14ba5416e0d9b17ea58414622b</data_input_field_id>
 				<t_value></t_value>
 				<value></value>
 			</item_002>
+			<item_003>
+				<data_input_field_id>hash_070021ec07dff96c1ce8bbdc9f751d10292196</data_input_field_id>
+				<t_value>on</t_value>
+				<value>3306</value>
+			</item_003>
 		</data>
 	</hash_0100217bb95a3d5afbbdcdfc2dd76b7a8fd8d3>
 	<hash_0300211bcda5e4df60cba665b7d87450fad86b>
 		<name>MySQL - QCache statistics</name>
 		<type_id>1</type_id>
-		<input_string>&lt;path_php_binary&gt; -q &lt;path_cacti&gt;/scripts/mysql_stats.php cache &lt;hostname&gt; &lt;username&gt; &lt;password&gt;</input_string>
+		<input_string><![CDATA[<path_php_binary> <path_cacti>/scripts/mysql_stats.php cache <hostname>:<db_port> <username> <password>]]></input_string>
 		<fields>
 			<hash_070021fabb3f14ba5416e0d9b17ea58414622b>
 				<name>Database Host</name>
@@ -287,6 +292,15 @@
 				<input_output>in</input_output>
 				<data_name>hostname</data_name>
 			</hash_070021fabb3f14ba5416e0d9b17ea58414622b>
+			<hash_070021ec07dff96c1ce8bbdc9f751d10292196>
+				<name>Database Port</name>
+				<update_rra></update_rra>
+				<regexp_match></regexp_match>
+				<allow_nulls></allow_nulls>
+				<type_code></type_code>
+				<input_output>in</input_output>
+				<data_name>db_port</data_name>
+			</hash_070021ec07dff96c1ce8bbdc9f751d10292196>
 			<hash_07002164a05dd4587445a92592725e5c48e7f2>
 				<name>Database User</name>
 				<update_rra></update_rra>

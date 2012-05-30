@@ -9,7 +9,7 @@
 			<t_height></t_height>
 			<height>120</height>
 			<t_width></t_width>
-			<width>500</width>
+			<width>700</width>
 			<t_slope_mode></t_slope_mode>
 			<slope_mode>on</slope_mode>
 			<t_auto_scale></t_auto_scale>
@@ -833,19 +833,24 @@
 			<item_001>
 				<data_input_field_id>hash_07002151343772a380bad06aebd1546bd16f79</data_input_field_id>
 				<t_value>on</t_value>
-				<value></value>
+				<value>cacti_stats</value>
 			</item_001>
 			<item_002>
 				<data_input_field_id>hash_0700217939ce23d58fb376d6a950040a16b577</data_input_field_id>
 				<t_value></t_value>
 				<value></value>
 			</item_002>
+			<item_003>
+				<data_input_field_id>hash_07002184dda2fb7e03a1508d32da829b3c7549</data_input_field_id>
+				<t_value>on</t_value>
+				<value>3306</value>
+			</item_003>
 		</data>
 	</hash_010021f8934333d8237bbd4608b18a6fb8f068>
 	<hash_030021f59964d2b1649f28cdacffd68b68b469>
 		<name>MySQL - Handler statistics</name>
 		<type_id>1</type_id>
-		<input_string>&lt;path_php_binary&gt; -q &lt;path_cacti&gt;/scripts/mysql_stats.php handler &lt;hostname&gt; &lt;username&gt; &lt;password&gt;</input_string>
+		<input_string><![CDATA[<path_php_binary> <path_cacti>/scripts/mysql_stats.php handler <hostname>:<db_port> <username> <password>]]></input_string>
 		<fields>
 			<hash_0700217939ce23d58fb376d6a950040a16b577>
 				<name>Database Host</name>
@@ -856,6 +861,15 @@
 				<input_output>in</input_output>
 				<data_name>hostname</data_name>
 			</hash_0700217939ce23d58fb376d6a950040a16b577>
+			<hash_07002184dda2fb7e03a1508d32da829b3c7549>
+				<name>Database Port</name>
+				<update_rra></update_rra>
+				<regexp_match></regexp_match>
+				<allow_nulls></allow_nulls>
+				<type_code></type_code>
+				<input_output>in</input_output>
+				<data_name>db_port</data_name>
+			</hash_07002184dda2fb7e03a1508d32da829b3c7549>			
 			<hash_07002151343772a380bad06aebd1546bd16f79>
 				<name>Database User</name>
 				<update_rra></update_rra>

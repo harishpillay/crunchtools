@@ -1,0 +1,141 @@
+THIS IS PROBABLY INCOMPLETE AND MAYBE INCORRECT, FEEL FREE TO IMPROVE!
+Author: Kyle Milnes 2012/04/16 https://plus.google.com/116424618550408352646 
+Date format is YYYY/MM/DD
+
+PREFACE
+=======
+The script and templates haven't had a straightforward history it seems.
+When I found Scott McCarty's Google code hosted project in 2012, it seemed things
+were simple enough.
+As of writing, Scott's fork is actively maintained, but not the most comprehensive fork.
+Perhaps things will be updated in the future to try and merge all the forks,
+but who knows.
+
+Through a bit of reading on the cacti forums and some searching online, I realised
+there was at least three forks of the original code and templates.
+
+Did I miss something? Let me know?
+
+Here is an attempt to document the history, for anyone who might be interested.
+
+Chronological contributors
+Otto Berger: https://plus.google.com/111683950235467143907
+Philo Vivero: http://faemalia.com/Technology/
+Baron Schwartz aka xaprb: https://plus.google.com/107034526279919890003
+Scott McCarty aka scottevil: https://plus.google.com/114597764404176971057
+Kyle Milnes aka kyle0r: https://plus.google.com/116424618550408352646
+
+Did I miss a contributor? Shout at me! 
+
+VISUAL FORK MAP
+===============
+
+       The MySQL Graph Collection
+               Otto Berger
+                  2005
+                   |
+                   |
+                   |
+          -------------------
+          |                 |
+          |                 |
+          |                 |
+     teMySQLcacti           |
+     Philo Vivero   	    |
+         2006               |
+          |                 |
+          |                 |
+          |                 |
+better-cacti-templates      |
+    Baron Schwartz          |
+     2008 - 2011            |
+                            |
+                            |
+                            |
+		    Graph MySQL Stats
+		      Scott McCarty
+		           2011
+
+HISTORY
+=======
+2004 - 2005
+Original author Otto Berger kicked things off, writing mysql_stats.php and
+various templates for his statistic presets.
+
+2005/01/18
+Otto Berger shares his creation with the cacti forum under the name
+The MySQL Graph Collection v2.0.0. Kudos to Otto.
+http://forums.cacti.net/viewtopic.php?f=12&t=6108
+Original 2.0.0 archive: http://forums.cacti.net/download/file.php?id=1176
+
+2005/12/15
+Philo Vivero posts on the cacti forums about planning to release his fork of
+Berger's work, named teMySQLcacti.
+http://forums.cacti.net/viewtopic.php?f=21&t=10958
+
+2005/12/19
+Philo Vivero posts on the cacti forums with his fork of Otto Berger's work.
+Thread: http://forums.cacti.net/viewtopic.php?f=12&t=11010
+Site: http://faemalia.com/Technology/
+Credits include:
+* Extensively modified by Tim Ellis (time AT digg DOT com) of Digg, Inc
+  during the hoary winter days of December, 2005.
+* InnoDB support and much valuable feedback by Peter Zaitsev of MySQL AB.
+* Memcached graphing support by Tim Ellis of Digg, Inc.
+
+2006/02/01
+Philo Vivero posts an updated version of teMySQLcacti on the cacti forums.
+
+2006/08/10
+Philo Vivero latest version of teMySQLcacti, not documented on the cacti forums?
+http://faemalia.com/Technology/teMySQLcacti-20060810.tar.gz
+
+2008/04/28
+Baron Schwartz aka. xaprb posts on the cacti forums with his fork and improvements of 
+Philo Vivero's work. He created a Google code project too, named: mysql-cacti-templates
+http://www.xaprb.com/blog/2008/04/27/improved-cacti-monitoring-templates-for-mysql/
+http://code.google.com/p/mysql-cacti-templates/
+* Built-in caching, so each poll cycle results in just one request to the server,
+instead of one request per graph.
+
+2008/10
+Baron Schwartz aka. xaprb releases mysql-cacti-templates-1.1.0
+
+2009/10/25
+mysql-cacti-templates is renamed to better-cacti-templates
+http://www.xaprb.com/blog/2009/10/25/version-1-1-4-of-improved-cacti-templates-released/
+* Includes graphs for Percona’s high-performance builds of the MySQL.
+* No longer using GET_LOCK() in MySQL to arbitrate access to the cache file.
+
+2011/01/22
+1.1.8 of better-cacti-templates released, as of writing this is the latest release.
+http://www.xaprb.com/blog/2011/01/22/version-1-1-8-of-better-cacti-templates-released/
+* There are graphs for the new response-time statistics exposed in Percona Server,
+  and a new set of graphs for MongoDB.
+
+2011/04/06
+Otto Berger posts on the cacti forums about the fact Scott McCarty is becoming the
+maintainer for his 2005 scripts.
+http://forums.cacti.net/viewtopic.php?f=12&t=6108&hilit=Otto&start=165#p210271
+
+2011/04/06
+Scott McCarty aka scottevil inherits and forks Otto Berger's original work, and creates
+a Google code project for same, Named Graph MySQL Stats.
+This is essentially 2.0.1 of Otto Berger's MySQL Graph Collection
+Latest thread: http://forums.cacti.net/viewtopic.php?f=12&t=42427
+Docs: http://crunchtools.com/software/crunchtools/cacti/graph-mysql-stats/
+
+2012/03/11
+dainiookas by way of the cacti forums, contributes the very nice query cache hits code
+and additional template. Perhaps these tweaks were borrowed from the Philo Vivero 
+teMySQLcacti fork?
+http://forums.cacti.net/viewtopic.php?f=12&t=42427&start=15#p227523
+
+2012/04/16
+Kyle Milnes ships dainiookas changes and some tweaks to Scott McCarty for inclusion in
+his Google code project Graph MySQL Stats.
+* Supports MySQL hostname:port.
+* A few coding best practices.
+* Improved defaults in the templates.
+* Use of the XML CDATA tag to avoid import issues and a bug in libxml2 which can mess
+  up the template import.

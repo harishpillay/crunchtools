@@ -140,7 +140,7 @@
 			<item_001>
 				<data_input_field_id>hash_0700217545287eb9eac3470e4c6b73842d2253</data_input_field_id>
 				<t_value>on</t_value>
-				<value></value>
+				<value>cacti_stats</value>
 			</item_001>
 			<item_002>
 				<data_input_field_id>hash_0700217bab7aca644fb6fb2042056f69425534</data_input_field_id>
@@ -152,12 +152,17 @@
 				<t_value></t_value>
 				<value>Connections</value>
 			</item_003>
+			<item_004>
+				<data_input_field_id>hash_070021e19a6f869df08797f4394c64792cb42c</data_input_field_id>
+				<t_value>on</t_value>
+				<value>3306</value>
+			</item_004>
 		</data>
 	</hash_010021226216b6e570a764c9bb84b85ed85e13>
 	<hash_030021cf6f050b7e61e18ab731e066eae934db>
 		<name>MySQL - Single Statistics</name>
 		<type_id>1</type_id>
-		<input_string>&lt;path_php_binary&gt; -q &lt;path_cacti&gt;/scripts/mysql_stats.php status &lt;hostname&gt; &lt;username&gt; &lt;password&gt; &lt;query&gt;</input_string>
+		<input_string><![CDATA[<path_php_binary> <path_cacti>/scripts/mysql_stats.php status <hostname>:<db_port> <username> <password> <query>]]></input_string>
 		<fields>
 			<hash_0700215e14c2899cff072f84aca6ef42d0ac43>
 				<name>Status Variable</name>
@@ -177,6 +182,15 @@
 				<input_output>in</input_output>
 				<data_name>hostname</data_name>
 			</hash_0700217bab7aca644fb6fb2042056f69425534>
+			<hash_070021e19a6f869df08797f4394c64792cb42c>
+				<name>Database Port</name>
+				<update_rra></update_rra>
+				<regexp_match></regexp_match>
+				<allow_nulls></allow_nulls>
+				<type_code></type_code>
+				<input_output>in</input_output>
+				<data_name>db_port</data_name>
+			</hash_070021e19a6f869df08797f4394c64792cb42c>
 			<hash_070021aaf96d5f97ab7b7104bc0b67551c5fa4>
 				<name>Status Value</name>
 				<update_rra>on</update_rra>

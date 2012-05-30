@@ -238,19 +238,24 @@
 			<item_001>
 				<data_input_field_id>hash_07002150c85788ac74204f25114d62de6861a8</data_input_field_id>
 				<t_value>on</t_value>
-				<value></value>
+				<value>cacti_stats</value>
 			</item_001>
 			<item_002>
 				<data_input_field_id>hash_0700217a3e90b02a1908cbc996da7e547c2c9d</data_input_field_id>
 				<t_value></t_value>
 				<value></value>
 			</item_002>
+			<item_003>
+				<data_input_field_id>hash_070021b6e13279a18f8a27963bd26a6313205b</data_input_field_id>
+				<t_value>on</t_value>
+				<value>3306</value>
+			</item_003>
 		</data>
 	</hash_0100210ecfe9b2e6c1bbb487eeed10e454966f>
 	<hash_0300214bc6c445eda22a9a177510b7c9131c95>
 		<name>MySQL - Traffic statistics</name>
 		<type_id>1</type_id>
-		<input_string>&lt;path_php_binary&gt; -q &lt;path_cacti&gt;/scripts/mysql_stats.php traffic &lt;hostname&gt; &lt;username&gt; &lt;password&gt;</input_string>
+		<input_string><![CDATA[<path_php_binary> <path_cacti>/scripts/mysql_stats.php traffic <hostname>:<db_port> <username> <password>]]></input_string>
 		<fields>
 			<hash_0700217a3e90b02a1908cbc996da7e547c2c9d>
 				<name>MySQL database hostname</name>
@@ -261,6 +266,15 @@
 				<input_output>in</input_output>
 				<data_name>hostname</data_name>
 			</hash_0700217a3e90b02a1908cbc996da7e547c2c9d>
+			<hash_070021b6e13279a18f8a27963bd26a6313205b>
+				<name>Database Port</name>
+				<update_rra></update_rra>
+				<regexp_match></regexp_match>
+				<allow_nulls></allow_nulls>
+				<type_code></type_code>
+				<input_output>in</input_output>
+				<data_name>db_port</data_name>
+			</hash_070021b6e13279a18f8a27963bd26a6313205b>			
 			<hash_07002150c85788ac74204f25114d62de6861a8>
 				<name>MySQL database username</name>
 				<update_rra></update_rra>

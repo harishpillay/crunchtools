@@ -1,0 +1,9 @@
+UPGRADE
+=======
+Put the new mysql_stats.php file inside the cacti/scripts/ directory
+If you wish, you can now archive or delete any other mysql_* php files...
+
+Normally importing the XML files using the cacti-interface is enough to upgrade.
+Cacti -> Console -> Import/Export -> Import Templates
+
+Check to see if you need to add graphs for new additional templates.

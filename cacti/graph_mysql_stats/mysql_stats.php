@@ -25,6 +25,7 @@ if ($_SERVER["argc"] == 5 || ($_SERVER["argv"][1] == "status" && $_SERVER["argc"
 		while ($fld_var = @mysql_fetch_row($result_var)) {
 			$variables[$fld_var[0]] = $fld_var[1];
 		}
+
 	} else {
 		die("Error: MySQL connect failed. Check MySQL parameters (host/login/password)\n");
 	}
@@ -35,35 +36,42 @@ if ($_SERVER["argc"] == 5 || ($_SERVER["argv"][1] == "status" && $_SERVER["argc"
 
 	switch($_SERVER["argv"][1]) {
 	case "cache" :
-		$output = "used:" 		. ($variables["query_cache_size"]-$status["Qcache_free_memory"]) . " "
-				 ."available:" 	. $status["Qcache_free_memory"];
+		$output = "used:" 		. ($variables["query_cache_size"]-$status["Qcache_free_memory"]).
+			 " available:"		. $status["Qcache_free_memory"];
+	break;
+	case "q_cache" :
+		$output = "hits:"		. $status["Qcache_hits"].
+			" inserts:"		. $status["Qcache_inserts"].
+			" l_prunes:"		. $status["Qcache_lowmem_prunes"].
+			" not_cached:"		. $status["Qcache_not_cached"].
+			" nr_in_cache:"		. $status["Qcache_queries_in_cache"];
 	break;
 	case "command" :
-		$output = "change_db:" . $status["Com_change_db"] . " "
-				 ."delete:"    . $status["Com_delete"] . " "
-				 ."insert:"    . $status["Com_insert"] . " "
-				 ."select:"    . $status["Com_select"] . " "
-				 ."update:"    . $status["Com_update"];
+		$output = "change_db:"		. $status["Com_change_db"].
+			 " delete:"		. $status["Com_delete"].
+			 " insert:"		. $status["Com_insert"].
+			 " select:"		. $status["Com_select"].
+			 " update:"		. $status["Com_update"];
 	break;
 	case "handler" :
-		$output = "delete:" 		. $status["Handler_delete"] . " "
-				 ."read_first:" 	. $status["Handler_read_first"] . " "
-				 ."read_key:"   	. $status["Handler_read_key"] . " "
-				 ."read_next:"  	. $status["Handler_read_next"] . " "
-				 ."read_prev:"  	. $status["Handler_read_prev"] . " "
-				 ."read_rnd:"   	. $status["Handler_read_rnd"] . " "
-				 ."read_rnd_next:" 	. $status["Handler_read_rnd_next"] . " "
-				 ."update:"			. $status["Handler_update"] . " "
-				 ."write:"			. $status["Handler_write"];
+		$output = "delete:"		. $status["Handler_delete"].
+			" read_first:"		. $status["Handler_read_first"].
+			" read_key:"		. $status["Handler_read_key"].
+			" read_next:"		. $status["Handler_read_next"].
+			" read_prev:"		. $status["Handler_read_prev"].
+			" read_rnd:"		. $status["Handler_read_rnd"].
+			" read_rnd_next:"	. $status["Handler_read_rnd_next"].
+			" update:"		. $status["Handler_update"].
+			" write:"		. $status["Handler_write"];
 	break;
 	case "thread" :
-		$output = "connected:" . $status["Threads_connected"] . " "
-				 ."running:"   . $status["Threads_running"] . " "
-				 ."cached:"    . $status["Threads_cached"];
+		$output = "connected:"		. $status["Threads_connected"].
+			" running:"		. $status["Threads_running"].
+			" cached:"		. $status["Threads_cached"];
 	break;
 	case "traffic" :
-		$output = "in:"		. $status["Bytes_received"] . " "
-				 ."out:"	. $status["Bytes_sent"];
+		$output = "in:"			. $status["Bytes_received"].
+			" out:"			. $status["Bytes_sent"];
 	break;
 	case "status" :
 		if (!isset($_SERVER["argv"][5])) {
@@ -80,4 +88,5 @@ if ($_SERVER["argc"] == 5 || ($_SERVER["argv"][1] == "status" && $_SERVER["argc"
 } else {
 	die("Error: wrong parameter count\nUsage: mysql_stats.php section db_host db_user db_password [status_var]\n");
 }
+
 ?>
