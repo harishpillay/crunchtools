@@ -78,7 +78,7 @@ init() {
             c ) config_file="$OPTARG";source $config_file;;
             f ) remote_clients_file="$OPTARG";;
             g ) remote_clients_file="$group_files/$OPTARG";;
-            l ) ls -1 $group_files/*;exit;;
+            l ) ls -1 $group_files/;exit;;
             t ) test_mode=1;;
             v ) debug=1;;
             h ) usage;;
@@ -92,9 +92,9 @@ init() {
     echo "This is dollar *: $*"
 
     ## Determineif command was passed
-   if [ "$*" != "" ]
+   if [ "$1" != "" ]
    then 
-       export command="$*"
+       export command="$1"
    else
        usage
        exit 1
